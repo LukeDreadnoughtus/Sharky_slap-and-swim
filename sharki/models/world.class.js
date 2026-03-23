@@ -1,5 +1,6 @@
 class World {
    
+
 character = new Character();
 level = level1;
 
@@ -15,47 +16,52 @@ constructor(canvas, keyboard){
     this.keyboard = keyboard;
     this.draw();
     this.setWorld();
-    this.checkCollisions();
+    this.CheckCollisions();
+
 }
 
 setWorld(){
     this.character.world = this;
 }
 
-checkCollisions(){
+CheckCollisions(){
     setInterval(() => {
-        this.level.enemies.forEach((shark) => {
+        this.level.enemies.forEach((enemy) => {
+                if( this.character.isColliding(enemy)) {
+                    console.log('collision with charakter', enemy);
+                }
+        });
+    }, 200);
+}
 
-            if(this.character.isColliding(shark)){
-                console.log('collisssíon with Character', shark);
-            }
+    draw(){
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.translate(this.camera_x, 0);
+
+        this.addObjectsToMap(this.level.backgroundObjects);  //must be first loaded
+        this.addtoMap(this.character);
+        this.addObjectsToMap(this.level.enemies);
+        
+         this.ctx.translate(-this.camera_x, 0);
+        
+
+
+        // Draw wird immerwieder aufgerufen
+        let self = this;
+        requestAnimationFrame(function() {
+            self.draw();
+        });
+    }
+
+    addObjectsToMap(objects){
+        objects.forEach(o => {
+        this.addtoMap(o);
         });
 
-    },1000);
-}
+    }
 
-draw(){
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    this.ctx.translate(this.camera_x, 0);
-
-    this.addObjectsToMap(this.level.backgroundObjects);
-    this.addtoMap(this.character);
-    this.addObjectsToMap(this.level.enemies);
-    
-    this.ctx.translate(-this.camera_x, 0);
-
-    let self = this;
-    requestAnimationFrame(function() {
-        self.draw();
-    });
-}
-
-addObjectsToMap(objects){
-    objects.forEach(o => {
-        this.addtoMap(o);
-    });
-}
 
 addtoMap(mo){
     if(mo.otherDirection){
@@ -63,11 +69,12 @@ addtoMap(mo){
     }
 
     mo.draw(this.ctx);
-    mo.drawFrame(this.ctx);
 
     if(mo.otherDirection){
         this.flipImageBack(mo);
     }
+
+    mo.drawFrame(this.ctx);
 }
 
 flipImage(mo){
