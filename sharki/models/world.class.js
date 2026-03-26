@@ -8,6 +8,7 @@ canvas;
 ctx;
 keyboard;
 camera_x = 0;
+statusBar = new StatusBar();
 
 
 constructor(canvas, keyboard){
@@ -27,9 +28,10 @@ setWorld(){
 CheckCollisions(){
     setInterval(() => {
         this.level.enemies.forEach((enemy) => {
-                if( this.character.isColliding(enemy)) {
-                    console.log('collision with charakter', enemy);
-                }
+            if (this.character.isColliding(enemy) && !this.character.isHurt()) {
+                this.character.hit();
+            
+            }
         });
     }, 200);
 }
@@ -41,6 +43,7 @@ CheckCollisions(){
         this.ctx.translate(this.camera_x, 0);
 
         this.addObjectsToMap(this.level.backgroundObjects);  //must be first loaded
+        this.addtoMap(this.statusBar);
         this.addtoMap(this.character);
         this.addObjectsToMap(this.level.enemies);
         
@@ -69,12 +72,12 @@ addtoMap(mo){
     }
 
     mo.draw(this.ctx);
+    mo.drawFrame(this.ctx);
+    mo.drawAttackLine(this.ctx);
 
     if(mo.otherDirection){
         this.flipImageBack(mo);
     }
-
-    mo.drawFrame(this.ctx);
 }
 
 flipImage(mo){

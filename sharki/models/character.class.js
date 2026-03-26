@@ -1,11 +1,15 @@
 class Character extends MovableObject{
-
     height = 250;
     width = 300;
     
-    y = 150;
+    y = 190;
     speed = 10;
-    
+
+    hitboxOffsetX = 120;
+    hitboxOffsetY = 140;
+    hitboxWidth = 60;
+    hitboxHeight = 50;
+
     IMAGES_WALKING = [
         'sharki/img/1.Sharkie/1.IDLE/1.png',
         'sharki/img/1.Sharkie/1.IDLE/2.png',
@@ -47,16 +51,45 @@ class Character extends MovableObject{
         'sharki/img/1.Sharkie/4.Attack/Fin slap/8.png'
     ];
 
+    IMAGES_DEAD =[
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/1.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/2.png',
+        'sharki/img/1.Sharkie/6.dead/1.Poisoned/3.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/4.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/5.png',
+        'sharki/img/1.Sharkie/6.dead/1.Poisoned/6.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/7.png',
+          'sharki/img/1.Sharkie/6.dead/1.Poisoned/8.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/9.png',
+        'sharki/img/1.Sharkie/6.dead/1.Poisoned/10.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/11.png',
+         'sharki/img/1.Sharkie/6.dead/1.Poisoned/12.png'
+
+    ];
+
+    IMAGES_HURT = [
+         'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/1.png',
+         'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/2.png',
+        'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/3.png',
+         'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/4.png',
+         'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/5.png'
+
+    ];
+    
     world;
+isSlapping = false;
+slapImageIndex = 0;
 
     constructor(){
-        super().loadImage('sharki/img/1.Sharkie/1.IDLE/1.png');
-        this.loadImages(this.IMAGES_WALKING);
-        this.loadImages(this.IMAGES_SWIM);
-        this.loadImages(this.IMAGES_SLAP);
-        this.applyGravity();
-        this.animate();
-    }
+    super().loadImage('sharki/img/1.Sharkie/1.IDLE/1.png');
+    this.loadImages(this.IMAGES_WALKING);
+    this.loadImages(this.IMAGES_SWIM);
+    this.loadImages(this.IMAGES_SLAP);
+    this.loadImages(this.IMAGES_DEAD);
+    this.loadImages(this.IMAGES_HURT);
+    this.applyGravity();
+    this.animate();
+}
 
     animate(){
 
@@ -80,24 +113,26 @@ class Character extends MovableObject{
         }, 1000 / 60);
 
         setInterval(() => {
+    if(this.isDead()){
+        this.playAnimation(this.IMAGES_DEAD);
+    } else if(this.isHurt()){
+        this.playAnimation(this.IMAGES_HURT);
+    } else if (this.isSlapping) {
+        let path = this.IMAGES_SLAP[this.slapImageIndex];
+        this.img = this.imageCache[path];
+        this.slapImageIndex++;
 
-            if (this.isSlapping) {
-                let path = this.IMAGES_SLAP[this.slapImageIndex];
-                this.img = this.imageCache[path];
-                this.slapImageIndex++;
-
-                if (this.slapImageIndex >= this.IMAGES_SLAP.length) {
-                    this.isSlapping = false;
-                    this.slapImageIndex = 0;
-                    this.currentImage = 0;
-                }
-            } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
-                this.playAnimation(this.IMAGES_SWIM);
-            } else {
-                this.playAnimation(this.IMAGES_WALKING);
-            }
-
-        }, 80);
+        if (this.slapImageIndex >= this.IMAGES_SLAP.length) {
+            this.isSlapping = false;
+            this.slapImageIndex = 0;
+            this.currentImage = 0;
+        }
+    } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+        this.playAnimation(this.IMAGES_SWIM);
+    } else {
+        this.playAnimation(this.IMAGES_WALKING);
+    }
+}, 80);
     }
 
     slap() {

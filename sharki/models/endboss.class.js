@@ -1,12 +1,13 @@
 class Endboss extends MovableObject{
 
-
-
     width = 500;
-    height =400;
-    y = -10;
+    height = 400;
+    y = 70;
 
-
+    hitboxOffsetX = 45;
+    hitboxOffsetY = 90;
+    hitboxWidth = 420;
+    hitboxHeight = 250;
 
     IMAGES_WALKING = [
         'sharki/img/2.Enemy/3 Final Enemy/2.floating/1.png',

@@ -1,9 +1,12 @@
 class Shark extends MovableObject{
 
-    height = 150;
+       height = 150;
     width = 100;
-   
 
+    hitboxOffsetX = 10;
+    hitboxOffsetY = 10;
+    hitboxWidth = 80;
+    hitboxHeight = 80;
     y = 310;
     IMAGES_WALKING = [
         'sharki/img/2.Enemy/1.Puffer fish (3 color options)/1.Swim/1.swim1.png',
