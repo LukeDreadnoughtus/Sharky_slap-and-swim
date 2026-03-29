@@ -9,6 +9,7 @@ ctx;
 keyboard;
 camera_x = 0;
 statusBar = new StatusBar();
+throwableObjects = [new ThrowableObject()];
 
 
 constructor(canvas, keyboard){
@@ -30,6 +31,7 @@ CheckCollisions(){
         this.level.enemies.forEach((enemy) => {
             if (this.character.isColliding(enemy) && !this.character.isHurt()) {
                 this.character.hit();
+                this.statusBar.setPercentage(this.character.energy);
             
             }
         });
@@ -43,9 +45,16 @@ CheckCollisions(){
         this.ctx.translate(this.camera_x, 0);
 
         this.addObjectsToMap(this.level.backgroundObjects);  //must be first loaded
+
+        this.ctx.translate(-this.camera_x, 0); // back
+
+        // ---- space for fixed object-----
         this.addtoMap(this.statusBar);
+        this.ctx.translate(this.camera_x, 0); //forward
+
         this.addtoMap(this.character);
         this.addObjectsToMap(this.level.enemies);
+        this.addObjectsToMap(this.throwableObjects);
         
          this.ctx.translate(-this.camera_x, 0);
         
