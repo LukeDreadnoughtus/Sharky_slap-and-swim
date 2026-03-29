@@ -40,7 +40,10 @@ class World {
             });
 
             this.level.enemies.forEach((enemy) => {
-                if (this.character.isColliding(enemy) && !this.character.isHurt()) {
+                if (enemy instanceof Endboss) {
+                    enemy.setTarget(this.character);
+                    this.handleEndbossCollision(enemy);
+                } else if (this.character.isColliding(enemy) && !this.character.isHurt()) {
                     this.character.hit(enemy.damage ?? 5);
                     this.statusBar.setPercentage(this.character.energy);
                 }
@@ -69,6 +72,16 @@ class World {
 
             this.checkThrowableCollisions();
         }, 50);
+    }
+
+    handleEndbossCollision(endboss) {
+        if (endboss.isDead() || endboss.deathAnimationStarted || !endboss.introFinished) {
+            return;
+        }
+
+        if (this.character.isColliding(endboss)) {
+            endboss.tryAttack(this.character);
+        }
     }
 
     checkSlapHit(enemy) {
@@ -199,6 +212,7 @@ class World {
             return;
         }
 
+        endboss.setTarget(this.character);
         endboss.startIntro();
     }
 
