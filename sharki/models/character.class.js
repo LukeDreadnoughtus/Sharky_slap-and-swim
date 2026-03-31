@@ -109,6 +109,9 @@ class Character extends MovableObject{
     isBubbleAttacking = false;
     bubbleAttackFrameIndex = 0;
     bubbleAttackType = null;
+    deathAnimationStarted = false;
+    deathAnimationFinished = false;
+    deathImageIndex = 0;
 
     constructor(){
         super().loadImage('sharki/img/1.Sharkie/1.IDLE/1.png');
@@ -134,8 +137,8 @@ class Character extends MovableObject{
             }
 
             if (!this.isBubbleAttacking) {
-                if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-                    this.x += this.speed;
+                if (this.world.keyboard.RIGHT && this.x < this.world.level.character_max_x) {
+                    this.x = Math.min(this.x + this.speed, this.world.level.character_max_x);
                     this.otherDirection = false;
                 }
 
@@ -166,7 +169,7 @@ class Character extends MovableObject{
             }
 
             if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
+                this.playDeathAnimationOnce();
             } else if (this.isHurt()) {
                 this.playAnimation(this.IMAGES_HURT);
             } else if (this.isBubbleAttacking) {
@@ -263,6 +266,29 @@ class Character extends MovableObject{
         this.world.spawnBubbleShot();
     }
 
+    playDeathAnimationOnce() {
+        if (!this.deathAnimationStarted) {
+            this.deathAnimationStarted = true;
+            this.deathAnimationFinished = false;
+            this.deathImageIndex = 0;
+            this.currentImage = 0;
+        }
+
+        if (this.deathImageIndex >= this.IMAGES_DEAD.length) {
+            const lastImage = this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1];
+            this.img = this.imageCache[lastImage];
+            this.deathAnimationFinished = true;
+            return;
+        }
+
+        const path = this.IMAGES_DEAD[this.deathImageIndex];
+        this.img = this.imageCache[path];
+        this.deathImageIndex++;
+
+        if (this.deathImageIndex >= this.IMAGES_DEAD.length) {
+            this.deathAnimationFinished = true;
+        }
+    }
 
     hit(damage = 5) {
         if (this.isDead()) {
@@ -290,6 +316,9 @@ class Character extends MovableObject{
         this.bubbleAttackFrameIndex = 0;
         this.bubbleAttackType = null;
         this.currentImage = 0;
+        this.deathAnimationStarted = false;
+        this.deathAnimationFinished = false;
+        this.deathImageIndex = 0;
 
         if (typeof this.onDeath === 'function') {
             this.onDeath();

@@ -87,8 +87,11 @@ class Endboss extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
         this.energy = config.energy ?? 100;
+        this.speed = config.speed ?? this.speed;
         this.targetX = config.x ?? 2500;
         this.introOffset = config.introOffset ?? 160;
+        this.introFrameDuration = config.introFrameDuration ?? 150;
+        this.introWaitTime = config.introWaitTime ?? 3000;
         this.x = this.targetX;
         this.introStartX = this.targetX + this.introOffset;
         this.collidable = false;
@@ -122,6 +125,10 @@ class Endboss extends MovableObject {
         const distance = this.introStartX - this.targetX;
 
         this.introInterval = setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.introImageIndex < this.IMAGES_INTRODUCE.length) {
                 const path = this.IMAGES_INTRODUCE[this.introImageIndex];
                 this.img = this.imageCache[path];
@@ -137,7 +144,7 @@ class Endboss extends MovableObject {
                 this.x = this.targetX;
                 this.finishIntro();
             }
-        }, 150);
+        }, this.introFrameDuration);
     }
 
     finishIntro() {
@@ -148,13 +155,17 @@ class Endboss extends MovableObject {
         this.img = this.imageCache[this.IMAGES_WALKING[0]];
 
         setTimeout(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.isDead() || this.isRemoved) {
                 return;
             }
 
             this.isWaitingAfterIntro = false;
             this.canMove = true;
-        }, 3000);
+        }, this.introWaitTime);
     }
 
     updateBehavior(character) {
@@ -291,6 +302,10 @@ class Endboss extends MovableObject {
 
         let frameIndex = 0;
         const deathInterval = setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (frameIndex >= this.IMAGES_DEAD.length) {
                 clearInterval(deathInterval);
                 setTimeout(() => {
@@ -307,6 +322,10 @@ class Endboss extends MovableObject {
 
     animate() {
         setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (!this.introFinished || this.isDead() || this.isRemoved) {
                 return;
             }

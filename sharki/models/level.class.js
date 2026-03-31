@@ -5,6 +5,7 @@ class Level{
     bossTriggers;
     poisonBubbles;
     level_end_x = 2200;
+    character_max_x = 2200;
 
     constructor(enemies, backgroundObjects, coins = [], bossTriggers = [], poisonBubbles = []){
         this.enemies = enemies;

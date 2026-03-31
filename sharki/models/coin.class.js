@@ -25,6 +25,10 @@ class Coin extends MovableObject {
 
     animate() {
         this.animationInterval = setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (!this.collected) {
                 this.playAnimation(this.IMAGES);
             }

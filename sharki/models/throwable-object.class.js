@@ -42,6 +42,10 @@ class ThrowableObject extends MovableObject {
 
     animate() {
         this.flightInterval = setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.isRemoved) {
                 clearInterval(this.flightInterval);
                 return;

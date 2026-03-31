@@ -16,6 +16,10 @@ class MovableObject extends DrawableObject {
 
     applyGravity(){
         setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.isAboveGround() || this.speedY > 0 ) {
                 this.y -= this.speedY;
                 this.speedY -= this.acceleration;
@@ -86,6 +90,10 @@ class MovableObject extends DrawableObject {
 
     moveLeft(){
         setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.isDead() || this.isRemoved) {
                 return;
             }

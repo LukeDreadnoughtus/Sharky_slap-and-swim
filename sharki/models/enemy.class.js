@@ -28,11 +28,45 @@ class Shark extends MovableObject{
             ],
             deadImages: [
                 'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/2.png',
-                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/2.2.png',
-                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/2.3.png'
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/2.3.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/2.2.png'
             ],
             energy: 15,
             damage: 7
+        },
+        jelly_lila: {
+            swimImage: 'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Lila 1.png',
+            walkingImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Lila 1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Lila 2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Lila 3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Lila 4.png'
+            ],
+            deadImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Lila/L1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Lila/L2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Lila/L3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Lila/L4.png'
+            ],
+            energy: 15,
+            damage: 7
+        },
+        jelly_yellow: {
+            swimImage: 'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 1.png',
+            walkingImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 4.png'
+            ],
+            deadImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Yellow/y1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Yellow/y2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Yellow/y3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Yellow/y4.png'
+            ],
+            energy: 17,
+            damage: 8
         }
     };
 
@@ -59,6 +93,13 @@ class Shark extends MovableObject{
         this.damage = config.damage ?? variant.damage;
         this.energy = config.energy ?? variant.energy;
         this.x = config.x ?? 450 + Math.random() * 500;
+        this.y = config.y ?? this.y;
+        this.width = config.width ?? this.width;
+        this.height = config.height ?? this.height;
+        this.hitboxOffsetX = config.hitboxOffsetX ?? this.hitboxOffsetX;
+        this.hitboxOffsetY = config.hitboxOffsetY ?? this.hitboxOffsetY;
+        this.hitboxWidth = config.hitboxWidth ?? this.hitboxWidth;
+        this.hitboxHeight = config.hitboxHeight ?? this.hitboxHeight;
         this.speed = config.speed ?? 0.15 + Math.random() * 0.5;
 
         this.loadImages(this.IMAGES_WALKING);
@@ -71,6 +112,10 @@ class Shark extends MovableObject{
         this.moveLeft();
 
         setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (this.isRemoved) {
                 return;
             }
@@ -96,6 +141,10 @@ class Shark extends MovableObject{
 
         let frameIndex = 0;
         const deathInterval = setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
             if (frameIndex >= this.IMAGES_DEAD.length) {
                 clearInterval(deathInterval);
                 return;

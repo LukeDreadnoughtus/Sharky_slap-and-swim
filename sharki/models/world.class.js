@@ -1,6 +1,6 @@
 class World {
     character = new Character();
-    level = level1;
+    level = createLevel1();
 
     canvas;
     ctx;
@@ -13,11 +13,21 @@ class World {
     collectedCoins = 0;
     collectedPoisonBubbles = 0;
     maxPoisonBubbles = 5;
+    isPaused = false;
+    isDestroyed = false;
+    hasHandledCharacterDeath = false;
+    hasHandledEndbossDeath = false;
+    resultDialogTimeout = null;
+    onCharacterDeath = null;
+    onEndbossDeath = null;
 
-    constructor(canvas, keyboard){
+    constructor(canvas, keyboard, callbacks = {}, levelFactory = createLevel1){
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+        this.level = levelFactory();
+        this.onCharacterDeath = callbacks.onCharacterDeath ?? null;
+        this.onEndbossDeath = callbacks.onEndbossDeath ?? null;
         this.draw();
         this.setWorld();
         this.CheckCollisions();
@@ -25,14 +35,53 @@ class World {
 
     setWorld(){
         this.character.world = this;
+
+        const allWorldObjects = [
+            ...this.level.enemies,
+            ...this.level.coins,
+            ...this.level.poisonBubbles,
+            ...this.level.backgroundObjects,
+            ...this.level.bossTriggers
+        ];
+
+        allWorldObjects.forEach((object) => {
+            object.world = this;
+        });
+    }
+
+    isRunning() {
+        return !this.isPaused && !this.isDestroyed;
+    }
+
+    pause() {
+        this.isPaused = true;
+    }
+
+    resume() {
+        this.isPaused = false;
+    }
+
+    destroy() {
+        this.isDestroyed = true;
+        this.isPaused = true;
+
+        if (this.resultDialogTimeout) {
+            clearTimeout(this.resultDialogTimeout);
+            this.resultDialogTimeout = null;
+        }
     }
 
     CheckCollisions(){
         setInterval(() => {
+            if (!this.isRunning()) {
+                return;
+            }
+
             this.level.enemies = this.level.enemies.filter(enemy => !enemy.isRemoved);
             this.throwableObjects = this.throwableObjects.filter(bubble => !bubble.isRemoved);
 
             if (this.character.isDead()) {
+                this.handleCharacterDeath();
                 return;
             }
 
@@ -46,6 +95,10 @@ class World {
             this.level.enemies.forEach((enemy) => {
                 if (enemy instanceof Endboss) {
                     enemy.updateBehavior(this.character);
+
+                    if (enemy.isDead()) {
+                        this.handleEndbossDeath();
+                    }
                 }
 
                 if (this.character.isColliding(enemy)) {
@@ -81,6 +134,40 @@ class World {
 
             this.checkThrowableCollisions();
         }, 50);
+    }
+
+    handleCharacterDeath() {
+        if (this.hasHandledCharacterDeath) {
+            return;
+        }
+
+        this.hasHandledCharacterDeath = true;
+        this.queueResultDialog(this.onCharacterDeath);
+    }
+
+    handleEndbossDeath() {
+        if (this.hasHandledEndbossDeath || this.hasHandledCharacterDeath) {
+            return;
+        }
+
+        this.hasHandledEndbossDeath = true;
+        this.queueResultDialog(this.onEndbossDeath);
+    }
+
+    queueResultDialog(callback) {
+        if (this.resultDialogTimeout || typeof callback !== 'function') {
+            return;
+        }
+
+        this.resultDialogTimeout = setTimeout(() => {
+            if (this.isDestroyed) {
+                return;
+            }
+
+            this.pause();
+            callback();
+            this.resultDialogTimeout = null;
+        }, 3000);
     }
 
     handleEndbossCollision(endboss) {
@@ -130,6 +217,7 @@ class World {
     spawnThrowableBubble(type = 'normal') {
         const spawn = this.character.getBubbleSpawnPosition();
         const bubble = new ThrowableObject(spawn.x, spawn.y, spawn.direction, type);
+        bubble.world = this;
         bubble.otherDirection = spawn.direction < 0;
         this.throwableObjects.push(bubble);
     }
@@ -153,6 +241,15 @@ class World {
     }
 
     draw(){
+        if (this.isDestroyed) {
+            return;
+        }
+
+        if (this.isPaused) {
+            requestAnimationFrame(() => this.draw());
+            return;
+        }
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.translate(this.camera_x, 0);

@@ -27,8 +27,9 @@
          <script src="sharki/models/endboss.class.js"></script>
          <script src="sharki/models/boss-trigger.class.js"></script>
               <script src="sharki/models/throwable-object.class.js"></script>
-       
+         <script src="sharki/levels/level-utils.js"></script>
          <script src="sharki/levels/level1.js"></script>
+         <script src="sharki/levels/level2.js"></script>
    
    <script src="sharki/js/game.js"></script>
     
@@ -52,6 +53,37 @@
             <div class="key-overlay__backdrop"></div>
             <div class="key-overlay__dialog">
                 <img src="sharki/img/6.Botones/Key/Steuerung.png" alt="Steuerung" class="key-overlay__image">
+            </div>
+        </div>
+
+
+        <button id="settingsBtn" class="settings-button hidden" type="button" aria-label="Einstellungen öffnen">
+            <span class="settings-button__icon">⚙</span>
+        </button>
+
+        <div id="pauseOverlay" class="pause-overlay hidden">
+            <div class="pause-overlay__backdrop"></div>
+            <div class="pause-overlay__dialog">
+                <h2 class="pause-overlay__title">Pause</h2>
+                <div class="pause-overlay__actions">
+                    <button id="closePauseBtn" class="menu-button" type="button">Schließen</button>
+                    <button id="muteBtn" class="menu-button menu-button--secondary" type="button">Mute</button>
+                    <button id="restartBtn" class="menu-button" type="button">Restart</button>
+                    <button id="leaveBtn" class="menu-button menu-button--secondary" type="button">Leave</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultOverlay" class="pause-overlay hidden">
+            <div class="pause-overlay__backdrop"></div>
+            <div class="pause-overlay__dialog">
+                <h2 id="resultTitle" class="pause-overlay__title">Level beendet</h2>
+                <p id="resultText" class="result-overlay__text"></p>
+                <div class="pause-overlay__actions">
+                    <button id="tryAgainBtn" class="menu-button hidden" type="button">Try again</button>
+                    <button id="nextLevelBtn" class="menu-button hidden" type="button">Next LvL</button>
+                    <button id="leaveGameBtn" class="menu-button menu-button--secondary hidden" type="button">Leave</button>
+                </div>
             </div>
         </div>
 

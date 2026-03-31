@@ -116,3 +116,107 @@ canvas {
     max-height: 360px;
     object-fit: contain;
 }
+
+
+.settings-button {
+    position: absolute;
+    top: clamp(10px, 2.2vw, 18px);
+    right: clamp(10px, 2.2vw, 18px);
+    z-index: 25;
+    width: clamp(44px, 6vw, 58px);
+    height: clamp(44px, 6vw, 58px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.96);
+    cursor: pointer;
+    transition: transform 180ms ease, background 180ms ease;
+}
+
+.settings-button:hover {
+    transform: scale(1.06);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-button__icon {
+    font-size: clamp(28px, 4vw, 36px);
+    line-height: 1;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.pause-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-overlay.hidden,
+.settings-button.hidden {
+    display: none;
+}
+
+.pause-overlay__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 21, 35, 0.7);
+    backdrop-filter: blur(3px);
+}
+
+.pause-overlay__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(72%, 420px);
+    padding: clamp(20px, 3vw, 28px);
+    border-radius: 24px;
+    background: rgba(1, 40, 63, 0.9);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.pause-overlay__title {
+    margin: 0 0 20px;
+    text-align: center;
+    color: white;
+    font-size: clamp(26px, 4vw, 34px);
+}
+
+.pause-overlay__actions {
+    display: grid;
+    gap: 12px;
+}
+
+.pause-overlay__actions .menu-button {
+    width: 100%;
+    font-size: clamp(20px, 3vw, 24px);
+}
+
+@media (max-width: 900px) {
+    .game-wrapper {
+        width: min(100vw, 820px);
+        height: min(calc(100vw * 480 / 820), 480px);
+    }
+
+    canvas,
+    .startscreen__image {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+
+.result-overlay__text {
+    margin: 0 0 18px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.pause-overlay__actions .hidden {
+    display: none;
+}
