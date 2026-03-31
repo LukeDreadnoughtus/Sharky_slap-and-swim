@@ -129,6 +129,10 @@ class Character extends MovableObject{
                 return;
             }
 
+            if (this.isDead()) {
+                return;
+            }
+
             if (!this.isBubbleAttacking) {
                 if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
                     this.x += this.speed;
@@ -141,7 +145,7 @@ class Character extends MovableObject{
                 }
             }
 
-            if (this.world.keyboard.UP && !this.isSlapping && !this.isBubbleAttacking) {
+            if (this.world.keyboard.SPACE && !this.isSlapping && !this.isBubbleAttacking) {
                 this.slap();
             }
 
@@ -257,6 +261,39 @@ class Character extends MovableObject{
         }
 
         this.world.spawnBubbleShot();
+    }
+
+
+    hit(damage = 5) {
+        if (this.isDead()) {
+            return;
+        }
+
+        super.hit(damage);
+
+        if (this.isDead()) {
+            this.triggerDeathState();
+            return;
+        }
+
+        if (this.energy <= 20) {
+            this.energy = 0;
+            this.triggerDeathState();
+        }
+    }
+
+    triggerDeathState() {
+        this.lastHit = 0;
+        this.isSlapping = false;
+        this.isBubbleAttacking = false;
+        this.slapImageIndex = 0;
+        this.bubbleAttackFrameIndex = 0;
+        this.bubbleAttackType = null;
+        this.currentImage = 0;
+
+        if (typeof this.onDeath === 'function') {
+            this.onDeath();
+        }
     }
 
     getBubbleSpawnPosition() {

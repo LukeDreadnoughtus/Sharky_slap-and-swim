@@ -65,9 +65,11 @@ function createEnemies(enemyConfigs, minDistance, startX, endX) {
     return enemies;
 }
 
+const COIN_START_X = 350;
+const BOSS_TRIGGER_X = 819 * 11 - 60;
+const COIN_END_X = BOSS_TRIGGER_X - 180;
 const POISON_BUBBLE_START_X = 500;
 const POISON_BUBBLE_END_X = 819 * 11 - 120;
-const BOSS_TRIGGER_X = 819 * 11 - 60;
 const ENEMY_START_X = 450;
 const ENEMY_END_X = BOSS_TRIGGER_X - 140;
 const ENEMY_MIN_DISTANCE = 220;
@@ -146,7 +148,7 @@ const level1 = new Level([
     new BackgroundObject('sharki/img/3. Background/Layers/3.Fondo 1/D2.png', 819*11),
     new BackgroundObject('sharki/img/3. Background/Layers/2. Floor/D2.png', 819*11)
 ] ,
-createCoins(10, 160, 350, 2200, 340),
+createCoins(14, 260, COIN_START_X, COIN_END_X, 340),
 [
     new BossTrigger(BOSS_TRIGGER_X, 110, 300)
 ],

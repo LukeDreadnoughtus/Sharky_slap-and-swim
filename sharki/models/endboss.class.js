@@ -1,17 +1,15 @@
-class Endboss extends MovableObject{
+class Endboss extends MovableObject {
     width = 500;
     height = 400;
     y = 70;
+    speed = 0.35;
+    damage = 8;
+    attackCooldown = 1200;
 
     hitboxOffsetX = 45;
     hitboxOffsetY = 90;
     hitboxWidth = 420;
     hitboxHeight = 250;
-
-    damage = 8;
-    speed = 0.35;
-    attackCooldown = 1200;
-    waitAfterIntro = 3000;
 
     IMAGES_INTRODUCE = [
         'sharki/img/2.Enemy/3 Final Enemy/1.Introduce/1.png',
@@ -53,9 +51,7 @@ class Endboss extends MovableObject{
 
     IMAGES_HURT = [
         'sharki/img/2.Enemy/3 Final Enemy/Hurt/1.png',
-        'sharki/img/2.Enemy/3 Final Enemy/Hurt/2.png',
-        'sharki/img/2.Enemy/3 Final Enemy/Hurt/3.png',
-        'sharki/img/2.Enemy/3 Final Enemy/Hurt/4.png'
+        'sharki/img/2.Enemy/3 Final Enemy/Hurt/3.png'
     ];
 
     IMAGES_DEAD = [
@@ -70,23 +66,31 @@ class Endboss extends MovableObject{
     isRemoved = false;
     introStarted = false;
     introFinished = false;
-    waitUntil = 0;
-    attackAnimationRunning = false;
-    hurtAnimationRunning = false;
+    introImageIndex = 0;
+    introInterval = null;
+    isWaitingAfterIntro = false;
+    canMove = false;
+    isAttacking = false;
+    attackAnimationStarted = false;
+    attackFrameIndex = 0;
+    lastAttackTime = 0;
+    isHurtAnimating = false;
+    hurtAnimationStarted = false;
+    hurtFrameIndex = 0;
     deathAnimationStarted = false;
-    hasDealtAttackDamage = false;
-    lastAttackAt = 0;
-    character = null;
 
-    constructor(config = {}){
-        super().loadImage(this.IMAGES_WALKING[0]);
+    constructor(config = {}) {
+        super().loadImage(this.IMAGES_INTRODUCE[0]);
         this.loadImages(this.IMAGES_INTRODUCE);
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_ATTACK);
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
         this.energy = config.energy ?? 100;
-        this.x = config.x ?? 2500;
+        this.targetX = config.x ?? 2500;
+        this.introOffset = config.introOffset ?? 160;
+        this.x = this.targetX;
+        this.introStartX = this.targetX + this.introOffset;
         this.collidable = false;
         this.animate();
     }
@@ -99,10 +103,6 @@ class Endboss extends MovableObject{
         super.draw(ctx);
     }
 
-    setTarget(character) {
-        this.character = character;
-    }
-
     startIntro() {
         if (this.introStarted) {
             return;
@@ -111,165 +111,168 @@ class Endboss extends MovableObject{
         this.isVisible = true;
         this.introStarted = true;
         this.introFinished = false;
+        this.isWaitingAfterIntro = false;
+        this.canMove = false;
         this.collidable = false;
         this.currentImage = 0;
+        this.introImageIndex = 0;
+        this.x = this.introStartX;
+        this.img = this.imageCache[this.IMAGES_INTRODUCE[0]];
 
-        let introFrame = 0;
-        const introInterval = setInterval(() => {
-            if (this.isRemoved) {
-                clearInterval(introInterval);
-                return;
+        const distance = this.introStartX - this.targetX;
+
+        this.introInterval = setInterval(() => {
+            if (this.introImageIndex < this.IMAGES_INTRODUCE.length) {
+                const path = this.IMAGES_INTRODUCE[this.introImageIndex];
+                this.img = this.imageCache[path];
             }
 
-            if (introFrame >= this.IMAGES_INTRODUCE.length) {
-                clearInterval(introInterval);
+            const progress = Math.min(1, (this.introImageIndex + 1) / this.IMAGES_INTRODUCE.length);
+            this.x = this.introStartX - distance * progress;
+            this.introImageIndex++;
+
+            if (this.introImageIndex >= this.IMAGES_INTRODUCE.length) {
+                clearInterval(this.introInterval);
+                this.introInterval = null;
+                this.x = this.targetX;
                 this.finishIntro();
-                return;
             }
-
-            const path = this.IMAGES_INTRODUCE[introFrame];
-            this.img = this.imageCache[path];
-            introFrame++;
         }, 150);
     }
 
     finishIntro() {
         this.introFinished = true;
-        this.waitUntil = Date.now() + this.waitAfterIntro;
+        this.isWaitingAfterIntro = true;
+        this.collidable = true;
         this.currentImage = 0;
         this.img = this.imageCache[this.IMAGES_WALKING[0]];
-        this.collidable = true;
+
+        setTimeout(() => {
+            if (this.isDead() || this.isRemoved) {
+                return;
+            }
+
+            this.isWaitingAfterIntro = false;
+            this.canMove = true;
+        }, 3000);
     }
 
-    updateDirection() {
-        if (!this.character) {
+    updateBehavior(character) {
+        if (!character || !this.introFinished || this.isDead() || this.isRemoved) {
             return;
         }
 
-        // Boss-Grafik hat die entgegengesetzte Grundrichtung zu den normalen Gegnern.
-        // Darum wird die Spiegelung hier invertiert gesetzt.
-        this.otherDirection = this.character.x > this.x;
+        this.updateDirection(character);
+
+        if (!this.canMove || this.isAttacking || this.isHurtAnimating) {
+            return;
+        }
+
+        const bossCenter = this.x + this.hitboxOffsetX + this.hitboxWidth / 2;
+        const characterCenter = character.x + character.hitboxOffsetX + character.hitboxWidth / 2;
+
+        if (characterCenter < bossCenter - 5) {
+            this.x -= this.speed;
+        } else if (characterCenter > bossCenter + 5) {
+            this.x += this.speed;
+        }
     }
 
-    canMove() {
+    updateDirection(character) {
+        const bossCenter = this.x + this.hitboxOffsetX + this.hitboxWidth / 2;
+        const characterCenter = character.x + character.hitboxOffsetX + character.hitboxWidth / 2;
+
+        this.otherDirection = characterCenter > bossCenter;
+    }
+
+    canStartAttack() {
         return this.introFinished &&
-               Date.now() >= this.waitUntil &&
-               !this.attackAnimationRunning &&
-               !this.hurtAnimationRunning &&
-               !this.deathAnimationStarted &&
-               !this.isDead() &&
-               !!this.character;
+            !this.isWaitingAfterIntro &&
+            !this.isDead() &&
+            !this.isRemoved &&
+            !this.isAttacking &&
+            !this.isHurtAnimating &&
+            new Date().getTime() - this.lastAttackTime >= this.attackCooldown;
     }
 
-    moveTowardCharacter() {
-        if (!this.canMove()) {
-            return;
+    startAttack() {
+        if (!this.canStartAttack()) {
+            return false;
         }
 
-        const distanceX = this.character.x - this.x;
-
-        if (Math.abs(distanceX) <= 5) {
-            return;
-        }
-
-        this.x += distanceX > 0 ? this.speed : -this.speed;
-        this.updateDirection();
+        this.isAttacking = true;
+        this.attackAnimationStarted = false;
+        this.attackFrameIndex = 0;
+        this.canMove = false;
+        this.lastAttackTime = new Date().getTime();
+        return true;
     }
 
-    tryAttack(character) {
-        if (this.deathAnimationStarted || this.isDead() || this.attackAnimationRunning || !this.introFinished) {
-            return;
-        }
+    playAttackAnimation() {
+        if (this.attackFrameIndex >= this.IMAGES_ATTACK.length) {
+            this.isAttacking = false;
+            this.attackAnimationStarted = false;
+            this.attackFrameIndex = 0;
+            this.currentImage = 0;
 
-        if (Date.now() - this.lastAttackAt < this.attackCooldown) {
-            return;
-        }
-
-        this.character = character;
-        this.updateDirection();
-        this.startAttackAnimation();
-    }
-
-    startAttackAnimation() {
-        this.attackAnimationRunning = true;
-        this.hasDealtAttackDamage = false;
-        this.currentImage = 0;
-
-        let frameIndex = 0;
-        const attackInterval = setInterval(() => {
-            if (this.isRemoved || this.deathAnimationStarted) {
-                clearInterval(attackInterval);
-                return;
+            if (!this.isDead() && !this.isRemoved && !this.isWaitingAfterIntro) {
+                this.canMove = true;
             }
+            return;
+        }
 
-            if (frameIndex >= this.IMAGES_ATTACK.length) {
-                clearInterval(attackInterval);
-                this.attackAnimationRunning = false;
-                this.lastAttackAt = Date.now();
-                this.currentImage = 0;
-                return;
-            }
-
-            const path = this.IMAGES_ATTACK[frameIndex];
-            this.img = this.imageCache[path];
-
-            if (!this.hasDealtAttackDamage && frameIndex >= 2 && this.character && this.isColliding(this.character)) {
-                this.character.hit(this.damage);
-                if (this.character.world && this.character.world.statusBar) {
-                    this.character.world.statusBar.setPercentage(this.character.energy);
-                }
-                this.hasDealtAttackDamage = true;
-            }
-
-            frameIndex++;
-        }, 120);
+        const path = this.IMAGES_ATTACK[this.attackFrameIndex];
+        this.img = this.imageCache[path];
+        this.attackFrameIndex++;
     }
 
-    hit(damage = 5){
-        if (this.isDead() || this.deathAnimationStarted || this.isRemoved) {
+    hit(damage = 5) {
+        if (this.isDead() || this.isRemoved) {
             return;
         }
 
         super.hit(damage);
 
         if (this.isDead()) {
-            this.startDeathAnimation();
             return;
         }
 
         this.startHurtAnimation();
     }
 
-    onDeath() {
-        this.startDeathAnimation();
-    }
-
     startHurtAnimation() {
-        if (this.hurtAnimationRunning || this.attackAnimationRunning || this.deathAnimationStarted) {
+        if (this.isAttacking || this.isHurtAnimating || !this.introFinished) {
             return;
         }
 
-        this.hurtAnimationRunning = true;
-        this.currentImage = 0;
+        this.isHurtAnimating = true;
+        this.hurtAnimationStarted = false;
+        this.hurtFrameIndex = 0;
+        this.canMove = false;
+    }
 
-        let frameIndex = 0;
-        const hurtInterval = setInterval(() => {
-            if (this.isRemoved || this.deathAnimationStarted) {
-                clearInterval(hurtInterval);
-                return;
+    playHurtAnimation() {
+        if (this.hurtFrameIndex >= this.IMAGES_HURT.length) {
+            this.isHurtAnimating = false;
+            this.hurtAnimationStarted = false;
+            this.hurtFrameIndex = 0;
+            this.currentImage = 0;
+
+            if (!this.isDead() && !this.isRemoved && !this.isWaitingAfterIntro) {
+                this.canMove = true;
             }
+            return;
+        }
 
-            if (frameIndex >= this.IMAGES_HURT.length) {
-                clearInterval(hurtInterval);
-                this.hurtAnimationRunning = false;
-                this.currentImage = 0;
-                return;
-            }
+        const path = this.IMAGES_HURT[this.hurtFrameIndex];
+        this.img = this.imageCache[path];
+        this.hurtFrameIndex++;
+    }
 
-            const path = this.IMAGES_HURT[frameIndex];
-            this.img = this.imageCache[path];
-            frameIndex++;
-        }, 100);
+    onDeath() {
+        this.disableHitbox();
+        this.canMove = false;
+        this.startDeathAnimation();
     }
 
     startDeathAnimation() {
@@ -278,14 +281,21 @@ class Endboss extends MovableObject{
         }
 
         this.deathAnimationStarted = true;
-        this.collidable = false;
+        this.isAttacking = false;
+        this.isHurtAnimating = false;
+        this.attackAnimationStarted = false;
+        this.hurtAnimationStarted = false;
+        this.attackFrameIndex = 0;
+        this.hurtFrameIndex = 0;
         this.currentImage = 0;
 
         let frameIndex = 0;
         const deathInterval = setInterval(() => {
             if (frameIndex >= this.IMAGES_DEAD.length) {
                 clearInterval(deathInterval);
-                this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+                setTimeout(() => {
+                    this.isRemoved = true;
+                }, 600);
                 return;
             }
 
@@ -295,25 +305,31 @@ class Endboss extends MovableObject{
         }, 180);
     }
 
-    animate(){
+    animate() {
         setInterval(() => {
-            if (!this.isVisible || this.isRemoved || this.deathAnimationStarted) {
+            if (!this.introFinished || this.isDead() || this.isRemoved) {
                 return;
             }
 
-            this.moveTowardCharacter();
-        }, 1000 / 60);
-
-        setInterval(() => {
-            if (!this.isVisible || this.isRemoved || this.deathAnimationStarted) {
+            if (this.isAttacking) {
+                if (!this.attackAnimationStarted) {
+                    this.attackAnimationStarted = true;
+                    this.attackFrameIndex = 0;
+                }
+                this.playAttackAnimation();
                 return;
             }
 
-            if (this.attackAnimationRunning || this.hurtAnimationRunning || !this.introFinished) {
+            if (this.isHurtAnimating) {
+                if (!this.hurtAnimationStarted) {
+                    this.hurtAnimationStarted = true;
+                    this.hurtFrameIndex = 0;
+                }
+                this.playHurtAnimation();
                 return;
             }
 
             this.playAnimation(this.IMAGES_WALKING);
-        }, 150);
+        }, 120);
     }
 }

@@ -32,6 +32,10 @@ class World {
             this.level.enemies = this.level.enemies.filter(enemy => !enemy.isRemoved);
             this.throwableObjects = this.throwableObjects.filter(bubble => !bubble.isRemoved);
 
+            if (this.character.isDead()) {
+                return;
+            }
+
             this.level.bossTriggers.forEach((trigger) => {
                 if (!trigger.isActivated && this.character.isColliding(trigger)) {
                     trigger.activate();
@@ -41,11 +45,16 @@ class World {
 
             this.level.enemies.forEach((enemy) => {
                 if (enemy instanceof Endboss) {
-                    enemy.setTarget(this.character);
-                    this.handleEndbossCollision(enemy);
-                } else if (this.character.isColliding(enemy) && !this.character.isHurt()) {
-                    this.character.hit(enemy.damage ?? 5);
-                    this.statusBar.setPercentage(this.character.energy);
+                    enemy.updateBehavior(this.character);
+                }
+
+                if (this.character.isColliding(enemy)) {
+                    if (enemy instanceof Endboss) {
+                        this.handleEndbossCollision(enemy);
+                    } else if (!this.character.isHurt()) {
+                        this.character.hit(enemy.damage ?? 5);
+                        this.statusBar.setPercentage(this.character.energy);
+                    }
                 }
 
                 this.checkSlapHit(enemy);
@@ -75,13 +84,18 @@ class World {
     }
 
     handleEndbossCollision(endboss) {
-        if (endboss.isDead() || endboss.deathAnimationStarted || !endboss.introFinished) {
+        if (!endboss || !endboss.canStartAttack() || this.character.isHurt()) {
             return;
         }
 
-        if (this.character.isColliding(endboss)) {
-            endboss.tryAttack(this.character);
+        const attackStarted = endboss.startAttack();
+
+        if (!attackStarted) {
+            return;
         }
+
+        this.character.hit(endboss.damage ?? 8);
+        this.statusBar.setPercentage(this.character.energy);
     }
 
     checkSlapHit(enemy) {
@@ -212,7 +226,6 @@ class World {
             return;
         }
 
-        endboss.setTarget(this.character);
         endboss.startIntro();
     }
 

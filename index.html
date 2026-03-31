@@ -36,12 +36,27 @@
 
 
 </head>
-<body onload="init()">
+<body>
     <h1>Sharki</h1>
-    <canvas id="canvas" width="820" height="480">
 
+    <div class="game-wrapper">
+        <div id="startscreen" class="startscreen">
+            <img src="sharki/img/6.Botones/Tittles/Titel Screen.png" alt="Titelbildschirm" class="startscreen__image">
+            <div class="startscreen__buttons">
+                <button id="startBtn" class="menu-button" type="button">Start</button>
+                <button id="keyBtn" class="menu-button menu-button--secondary" type="button">Key</button>
+            </div>
+        </div>
 
-</canvas>
+        <div id="keyOverlay" class="key-overlay hidden">
+            <div class="key-overlay__backdrop"></div>
+            <div class="key-overlay__dialog">
+                <img src="sharki/img/6.Botones/Key/Steuerung.png" alt="Steuerung" class="key-overlay__image">
+            </div>
+        </div>
+
+        <canvas id="canvas" width="820" height="480"></canvas>
+    </div>
  
 </body>
 </html>
