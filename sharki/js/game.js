@@ -4,7 +4,8 @@ let currentLevelNumber = 1;
 
 const LEVEL_FACTORIES = {
     1: createLevel1,
-    2: createLevel2
+    2: createLevel2,
+    3: createLevel3
 };
 
 let keyboard = new Keyboard();
@@ -149,25 +150,28 @@ function showGameOverDialog() {
 }
 
 function showLevelCompleteDialog(levelNumber) {
-    const isLevelOne = levelNumber === 1;
+    const hasNextLevel = levelNumber < 3;
+    const nextLevelNumber = levelNumber + 1;
 
     openResultDialog({
         title: 'Level geschafft',
-        text: isLevelOne
-            ? 'Der Endboss ist besiegt. Du kannst jetzt direkt Level 2 starten.'
-            : 'Der Endboss ist besiegt. Level 2 wurde abgeschlossen.',
-        showLeave: !isLevelOne,
-        showNextLevel: isLevelOne
+        text: hasNextLevel
+            ? `Der Endboss ist besiegt. Du kannst jetzt direkt Level ${nextLevelNumber} starten.`
+            : 'Der Endboss ist besiegt. Du hast alle 3 Level abgeschlossen.',
+        showLeave: !hasNextLevel,
+        showNextLevel: hasNextLevel
     });
 }
 
 function goToNextLevel() {
-    if (currentLevelNumber !== 1) {
+    const nextLevelNumber = currentLevelNumber + 1;
+
+    if (!LEVEL_FACTORIES[nextLevelNumber]) {
         return;
     }
 
     closeResultDialog();
-    init(2);
+    init(nextLevelNumber);
 }
 
 function setupStartScreen() {

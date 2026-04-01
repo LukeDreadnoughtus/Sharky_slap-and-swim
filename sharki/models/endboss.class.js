@@ -3,6 +3,7 @@ class Endboss extends MovableObject {
     height = 400;
     y = 70;
     speed = 0.35;
+    movementSpeed = 0.35;
     damage = 8;
     attackCooldown = 1200;
 
@@ -78,6 +79,7 @@ class Endboss extends MovableObject {
     hurtAnimationStarted = false;
     hurtFrameIndex = 0;
     deathAnimationStarted = false;
+    moveWhileHurt = false;
 
     constructor(config = {}) {
         super().loadImage(this.IMAGES_INTRODUCE[0]);
@@ -88,10 +90,12 @@ class Endboss extends MovableObject {
         this.loadImages(this.IMAGES_DEAD);
         this.energy = config.energy ?? 100;
         this.speed = config.speed ?? this.speed;
+        this.movementSpeed = config.movementSpeed ?? config.speed ?? this.movementSpeed;
         this.targetX = config.x ?? 2500;
         this.introOffset = config.introOffset ?? 160;
         this.introFrameDuration = config.introFrameDuration ?? 150;
         this.introWaitTime = config.introWaitTime ?? 3000;
+        this.moveWhileHurt = config.moveWhileHurt ?? this.moveWhileHurt;
         this.x = this.targetX;
         this.introStartX = this.targetX + this.introOffset;
         this.collidable = false;
@@ -175,7 +179,7 @@ class Endboss extends MovableObject {
 
         this.updateDirection(character);
 
-        if (!this.canMove || this.isAttacking || this.isHurtAnimating) {
+        if (!this.canMove || this.isAttacking || (this.isHurtAnimating && !this.moveWhileHurt)) {
             return;
         }
 
@@ -183,9 +187,9 @@ class Endboss extends MovableObject {
         const characterCenter = character.x + character.hitboxOffsetX + character.hitboxWidth / 2;
 
         if (characterCenter < bossCenter - 5) {
-            this.x -= this.speed;
+            this.x -= this.movementSpeed;
         } else if (characterCenter > bossCenter + 5) {
-            this.x += this.speed;
+            this.x += this.movementSpeed;
         }
     }
 
@@ -259,7 +263,7 @@ class Endboss extends MovableObject {
         this.isHurtAnimating = true;
         this.hurtAnimationStarted = false;
         this.hurtFrameIndex = 0;
-        this.canMove = false;
+        this.canMove = this.moveWhileHurt;
     }
 
     playHurtAnimation() {

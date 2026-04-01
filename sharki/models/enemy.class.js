@@ -51,6 +51,57 @@ class Shark extends MovableObject{
             energy: 15,
             damage: 7
         },
+        jelly_green: {
+            swimImage: 'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Green 1.png',
+            walkingImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Green 1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Green 2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Green 3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Green 4.png'
+            ],
+            deadImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/green/g1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/green/g2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/green/g3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/green/g4.png'
+            ],
+            energy: 21,
+            damage: 7
+        },
+        jelly_pink: {
+            swimImage: 'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Pink 1.png',
+            walkingImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Pink 1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Pink 2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Pink 3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/S%23U00faper dangerous/Pink 4.png'
+            ],
+            deadImages: [
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Pink/P1.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Pink/P2.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Pink/P3.png',
+                'sharki/img/2.Enemy/2 Jelly fish/Dead/Pink/P4.png'
+            ],
+            energy: 19,
+            damage: 8
+        },
+        transition3: {
+            swimImage: 'sharki/img/2.Enemy/1.Puffer fish (3 color options)/1.Swim/3.swim1.png',
+            walkingImages: [
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition1.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition2.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition3.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition4.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition5.png'
+            ],
+            deadImages: [
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/3.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/3.3.png',
+                'sharki/img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/3.2.png'
+            ],
+            energy: 21,
+            damage: 7
+        },
         jelly_yellow: {
             swimImage: 'sharki/img/2.Enemy/2 Jelly fish/Regular damage/Yellow 1.png',
             walkingImages: [
@@ -80,6 +131,11 @@ class Shark extends MovableObject{
     y = 310;
     isRemoved = false;
     deathAnimationStarted = false;
+    movementPattern = 'horizontal';
+    baseY = 310;
+    verticalDirection = 1;
+    verticalRange = 80;
+    verticalSpeed = 0.8;
 
     constructor(config = {}){
         const variantName = config.variant ?? 'default';
@@ -101,6 +157,10 @@ class Shark extends MovableObject{
         this.hitboxWidth = config.hitboxWidth ?? this.hitboxWidth;
         this.hitboxHeight = config.hitboxHeight ?? this.hitboxHeight;
         this.speed = config.speed ?? 0.15 + Math.random() * 0.5;
+        this.movementPattern = config.movementPattern ?? this.movementPattern;
+        this.baseY = this.y;
+        this.verticalRange = config.verticalRange ?? this.verticalRange;
+        this.verticalSpeed = config.verticalSpeed ?? this.verticalSpeed;
 
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_DEAD);
@@ -109,7 +169,7 @@ class Shark extends MovableObject{
     }
 
     animate(){
-        this.moveLeft();
+        this.startMovement();
 
         setInterval(() => {
             if (this.world && !this.world.isRunning()) {
@@ -129,6 +189,38 @@ class Shark extends MovableObject{
 
             this.playAnimation(this.IMAGES_WALKING);
         }, 50);
+    }
+
+
+    startMovement() {
+        if (this.movementPattern === 'vertical') {
+            this.moveVertically();
+            return;
+        }
+
+        this.moveLeft();
+    }
+
+    moveVertically() {
+        setInterval(() => {
+            if (this.world && !this.world.isRunning()) {
+                return;
+            }
+
+            if (this.isDead() || this.isRemoved) {
+                return;
+            }
+
+            this.y += this.verticalSpeed * this.verticalDirection;
+
+            if (this.y >= this.baseY + this.verticalRange) {
+                this.y = this.baseY + this.verticalRange;
+                this.verticalDirection = -1;
+            } else if (this.y <= this.baseY - this.verticalRange) {
+                this.y = this.baseY - this.verticalRange;
+                this.verticalDirection = 1;
+            }
+        }, 1000 / 60);
     }
 
     onDeath() {

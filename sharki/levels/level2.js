@@ -1,4 +1,5 @@
 const LEVEL_2_ENEMIES = [
+    ...Array.from({ length: 3 }, () => ({ variant: 'transition2' })),
     ...Array.from({ length: 5 }, () => ({
         variant: 'jelly_lila',
         y: 265,
@@ -9,7 +10,10 @@ const LEVEL_2_ENEMIES = [
         hitboxWidth: 70,
         hitboxHeight: 78,
         minSpeed: 0.15,
-        maxSpeed: 0.65
+        maxSpeed: 0.65,
+        movementPattern: 'vertical',
+        verticalRange: 120,
+        verticalSpeed: 1
     })),
     ...Array.from({ length: 5 }, () => ({
         variant: 'jelly_yellow',
@@ -32,16 +36,18 @@ function createLevel2() {
             energy: 150,
             x: 819 * 11 + 120,
             speed: 0.5,
+            movementSpeed: 3.5,
             introFrameDuration: 100,
-            introWaitTime: 1800
+            introWaitTime: 1800,
+            moveWhileHurt: true
         })
     ],
     createBackgroundObjects('L'),
-    createCoins(14, 260, COIN_START_X, COIN_END_X, 340),
+    createCoins(24, 260, COIN_START_X, COIN_END_X, 340),
     [
         new BossTrigger(BOSS_TRIGGER_X, 110, 300)
     ],
-    createPoisonBubbles(7, 220, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 330)
+    createPoisonBubbles(9, 220, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 330)
     );
 
     level.level_end_x = 819 * 12;
