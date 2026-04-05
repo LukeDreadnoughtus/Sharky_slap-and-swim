@@ -20,6 +20,7 @@ class World {
     resultDialogTimeout = null;
     onCharacterDeath = null;
     onEndbossDeath = null;
+    renderScale = 1;
 
     constructor(canvas, keyboard, callbacks = {}, levelFactory = createLevel1){
         this.ctx = canvas.getContext('2d');
@@ -47,6 +48,10 @@ class World {
         allWorldObjects.forEach((object) => {
             object.world = this;
         });
+    }
+
+    setRenderScale(scale = 1) {
+        this.renderScale = scale > 0 ? scale : 1;
     }
 
     isRunning() {
@@ -105,7 +110,7 @@ class World {
                     if (enemy instanceof Endboss) {
                         this.handleEndbossCollision(enemy);
                     } else if (!this.character.isHurt()) {
-                        this.character.hit(enemy.damage ?? 5);
+                        this.character.hit(enemy.damage ?? 5, this.getDamageTypeForEnemy(enemy));
                         this.statusBar.setPercentage(this.character.energy);
                     }
                 }
@@ -185,6 +190,14 @@ class World {
         this.statusBar.setPercentage(this.character.energy);
     }
 
+    getDamageTypeForEnemy(enemy) {
+        if (!enemy || typeof enemy.variant !== 'string') {
+            return 'poison';
+        }
+
+        return enemy.variant.startsWith('jelly_') ? 'electric' : 'poison';
+    }
+
     checkSlapHit(enemy) {
         const slapHitbox = this.character.getSlapHitbox();
 
@@ -250,7 +263,9 @@ class World {
             return;
         }
 
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
 
         this.ctx.translate(this.camera_x, 0);
 

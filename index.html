@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#001018">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="style.css">
   <title>Document</title>
    <script src="sharki/models/drawable-object.class.js"></script>
@@ -62,6 +66,15 @@
             <span class="settings-button__icon">⚙</span>
         </button>
 
+        <button id="fullscreenBtn" class="fullscreen-button" type="button" aria-label="Vollbild umschalten" title="Vollbild umschalten">
+            <img
+                id="fullscreenIcon"
+                class="fullscreen-button__image"
+                src="sharki/img/6.Botones/Full Screen/Mesa de trabajo 6.png"
+                alt="Vollbild"
+            >
+        </button>
+
         <div id="pauseOverlay" class="pause-overlay hidden">
             <div class="pause-overlay__backdrop"></div>
             <div class="pause-overlay__dialog">
@@ -88,7 +101,30 @@
             </div>
         </div>
 
+        <div id="touchControls" class="touch-controls hidden" aria-hidden="true">
+            <div class="touch-controls__cluster touch-controls__cluster--left">
+                <button class="touch-button" type="button" data-key="LEFT" aria-label="Move left">◀</button>
+                <button class="touch-button" type="button" data-key="RIGHT" aria-label="Move right">▶</button>
+            </div>
+            <button class="touch-button touch-button--fullscreen touch-button--icon" id="mobileFullscreenBtn" type="button" aria-label="Vollbild umschalten">⛶</button>
+            <div class="touch-controls__cluster touch-controls__cluster--right">
+                <button class="touch-button touch-button--wide" type="button" data-key="SPACE" aria-label="Slap">Slap</button>
+                <div class="touch-controls__row">
+                    <button class="touch-button" type="button" data-key="S" aria-label="Bubble">S</button>
+                    <button class="touch-button" type="button" data-key="D" aria-label="Poison bubble">D</button>
+                </div>
+            </div>
+        </div>
+
         <canvas id="canvas" width="820" height="480"></canvas>
+    </div>
+ 
+    <div id="orientationOverlay" class="orientation-overlay hidden" aria-live="polite">
+        <div class="orientation-overlay__backdrop"></div>
+        <div class="orientation-overlay__dialog">
+            <h2 class="orientation-overlay__title">Turn your device to play</h2>
+            <p class="orientation-overlay__text">This game works on desktop and on mobile only in landscape mode.</p>
+        </div>
     </div>
  
 </body>

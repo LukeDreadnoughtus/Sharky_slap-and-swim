@@ -78,6 +78,14 @@ class Character extends MovableObject{
          'sharki/img/1.Sharkie/5.Hurt/1.Poisoned/5.png'
     ];
 
+    IMAGES_ELECTRIC_HURT = [
+        'sharki/img/1.Sharkie/5.Hurt/2.Electric shock/.o1.png',
+        'sharki/img/1.Sharkie/5.Hurt/2.Electric shock/.o2.png',
+        'sharki/img/1.Sharkie/5.Hurt/2.Electric shock/1.png',
+        'sharki/img/1.Sharkie/5.Hurt/2.Electric shock/2.png',
+        'sharki/img/1.Sharkie/5.Hurt/2.Electric shock/3.png'
+    ];
+
     IMAGES_BUBBLE_ATTACK = [
         'sharki/img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/1.png',
         'sharki/img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/2.png',
@@ -112,6 +120,7 @@ class Character extends MovableObject{
     deathAnimationStarted = false;
     deathAnimationFinished = false;
     deathImageIndex = 0;
+    hurtAnimationType = 'poison';
 
     constructor(){
         super().loadImage('sharki/img/1.Sharkie/1.IDLE/1.png');
@@ -120,6 +129,7 @@ class Character extends MovableObject{
         this.loadImages(this.IMAGES_SLAP);
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_HURT);
+        this.loadImages(this.IMAGES_ELECTRIC_HURT);
         this.loadImages(this.IMAGES_BUBBLE_ATTACK);
         this.loadImages(this.IMAGES_POISON_BUBBLE_ATTACK);
         this.applyGravity();
@@ -171,7 +181,7 @@ class Character extends MovableObject{
             if (this.isDead()) {
                 this.playDeathAnimationOnce();
             } else if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
+                this.playAnimation(this.getCurrentHurtImages());
             } else if (this.isBubbleAttacking) {
                 this.playBubbleAttackAnimation();
             } else if (this.isSlapping) {
@@ -192,6 +202,14 @@ class Character extends MovableObject{
             }
         }, 80);
     }
+
+
+    getCurrentHurtImages() {
+        return this.hurtAnimationType === 'electric'
+            ? this.IMAGES_ELECTRIC_HURT
+            : this.IMAGES_HURT;
+    }
+
 
     slap() {
         if (!this.isSlapping) {
@@ -290,11 +308,12 @@ class Character extends MovableObject{
         }
     }
 
-    hit(damage = 5) {
+    hit(damage = 5, type = 'poison') {
         if (this.isDead()) {
             return;
         }
 
+        this.hurtAnimationType = type === 'electric' ? 'electric' : 'poison';
         super.hit(damage);
 
         if (this.isDead()) {
