@@ -1,4 +1,6 @@
 class AudioManager {
+    STORAGE_KEY = 'sharki_audio_muted';
+
     SOUND_PATHS = {
         intro_bubble_sound: 'audio/intro_bubble_sound.mp3',
         bite_sound: 'audio/bite_sound.mp3',
@@ -31,7 +33,9 @@ class AudioManager {
      */
 
     constructor() {
+        this.muted = this.loadMuteState();
         this.preloadSounds();
+        this.applyMuteState();
         this.registerUnlockListeners();
     }
 
@@ -53,7 +57,8 @@ class AudioManager {
         this.introAudio = this.baseAudios.intro_bubble_sound;
         if (this.introAudio) {
             this.introAudio.loop = false;
-            this.introAudio.volume = this.introVolume;
+            this.introAudio.volume = this.muted ? 0 : this.introVolume;
+            this.introAudio.muted = this.muted;
             this.introAudio.addEventListener('ended', () => this.handleIntroEnded());
         }
 
@@ -61,6 +66,23 @@ class AudioManager {
         if (this.gameplayAudio) {
             this.gameplayAudio.loop = true;
             this.gameplayAudio.volume = this.getDefaultVolume('elevator_sound');
+            this.gameplayAudio.muted = this.muted;
+        }
+    }
+
+    loadMuteState() {
+        try {
+            return localStorage.getItem(this.STORAGE_KEY) === 'true';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    saveMuteState() {
+        try {
+            localStorage.setItem(this.STORAGE_KEY, String(this.muted));
+        } catch (error) {
+            // localStorage nicht verfügbar
         }
     }
 
@@ -206,7 +228,7 @@ class AudioManager {
 
         if (this.introAudio.paused) {
             this.introAudio.currentTime = 0;
-            this.introAudio.volume = this.introVolume;
+            this.introAudio.volume = this.muted ? 0 : this.introVolume;
             return;
         }
 
@@ -217,7 +239,7 @@ class AudioManager {
             this.fadeAudioOut(this.introAudio, fadeDuration, () => {
                 this.introAudio.pause();
                 this.introAudio.currentTime = 0;
-                this.introAudio.volume = this.introVolume;
+                this.introAudio.volume = this.muted ? 0 : this.introVolume;
             });
         }, fadeDelay);
     }
@@ -238,7 +260,7 @@ class AudioManager {
 
         if (!this.introLoopActive || this.muted) {
             this.introAudio.currentTime = 0;
-            this.introAudio.volume = this.introVolume;
+            this.introAudio.volume = this.muted ? 0 : this.introVolume;
             return;
         }
 
@@ -360,6 +382,7 @@ class AudioManager {
     toggleMute() {
         this.muted = !this.muted;
         this.applyMuteState();
+        this.saveMuteState();
         return this.muted;
     }
 
@@ -372,6 +395,7 @@ class AudioManager {
     setMuted(isMuted) {
         this.muted = Boolean(isMuted);
         this.applyMuteState();
+        this.saveMuteState();
     }
 
     /**
@@ -383,6 +407,7 @@ class AudioManager {
     applyMuteState() {
         if (this.introAudio) {
             this.introAudio.muted = this.muted;
+            this.introAudio.volume = this.muted ? 0 : this.introVolume;
 
             if (!this.muted && this.introLoopActive && this.introAudio.paused && this.isStartScreenVisible()) {
                 this.startIntroLoop();
@@ -391,6 +416,7 @@ class AudioManager {
 
         if (this.gameplayAudio) {
             this.gameplayAudio.muted = this.muted;
+            this.gameplayAudio.volume = this.getDefaultVolume('elevator_sound');
 
             if (!this.muted && this.gameplayLoopActive && this.gameplayAudio.paused && !this.isStartScreenVisible()) {
                 this.startGameplayLoop();

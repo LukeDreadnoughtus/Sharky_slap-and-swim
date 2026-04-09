@@ -95,7 +95,7 @@ function createEnemies(enemyConfigs, minDistance, startX, endX) {
  * - Gehört zur Levellogik für level utils und setzt Spielfeld-Inhalte zusammen.
  */
 
-function createBackgroundObjects(themePrefix = 'D', segmentCount = 12, segmentWidth = 819) {
+function createBackgroundObjects(themePrefix = 'D', segmentCount = 12, segmentWidth = 820) {
     const layers = [
         '5. Water',
         '4.Fondo 2',

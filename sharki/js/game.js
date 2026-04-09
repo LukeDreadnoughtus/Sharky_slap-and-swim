@@ -793,6 +793,26 @@ function bindTap(button, handler) {
  * - Greift dabei auf DOM, Audio zu.
  */
 
+function openLegalNotice() {
+    const legalNoticeOverlay = document.getElementById('legalNoticeOverlay');
+
+    if (!legalNoticeOverlay) {
+        return;
+    }
+
+    legalNoticeOverlay.classList.remove('hidden');
+}
+
+function closeLegalNotice() {
+    const legalNoticeOverlay = document.getElementById('legalNoticeOverlay');
+
+    if (!legalNoticeOverlay) {
+        return;
+    }
+
+    legalNoticeOverlay.classList.add('hidden');
+}
+
 function setupStartScreen() {
     syncViewportCssVars();
     updateFullscreenButtonIcon();
@@ -804,6 +824,10 @@ function setupStartScreen() {
     const keyBtn = document.getElementById('keyBtn');
     const keyOverlay = document.getElementById('keyOverlay');
     const backdrop = document.querySelector('.key-overlay__backdrop');
+    const legalNoticeBtn = document.getElementById('legalNoticeBtn');
+    const legalNoticeOverlay = document.getElementById('legalNoticeOverlay');
+    const legalNoticeBackdrop = document.querySelector('.legal-overlay__backdrop');
+    const closeLegalNoticeBtn = document.getElementById('closeLegalNoticeBtn');
     const settingsBtn = document.getElementById('settingsBtn');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const closePauseBtn = document.getElementById('closePauseBtn');
@@ -814,7 +838,7 @@ function setupStartScreen() {
     const leaveGameBtn = document.getElementById('leaveGameBtn');
     const nextLevelBtn = document.getElementById('nextLevelBtn');
 
-    if (!startScreen || !startBtn || !keyBtn || !keyOverlay || !backdrop || !settingsBtn || !fullscreenBtn || !closePauseBtn || !restartBtn || !leaveBtn || !muteBtn || !tryAgainBtn || !leaveGameBtn || !nextLevelBtn) return;
+    if (!startScreen || !startBtn || !keyBtn || !keyOverlay || !backdrop || !legalNoticeBtn || !legalNoticeOverlay || !legalNoticeBackdrop || !closeLegalNoticeBtn || !settingsBtn || !fullscreenBtn || !closePauseBtn || !restartBtn || !leaveBtn || !muteBtn || !tryAgainBtn || !leaveGameBtn || !nextLevelBtn) return;
 
     document.querySelectorAll('img').forEach((image) => image.setAttribute('draggable', 'false'));
 
@@ -839,6 +863,8 @@ function setupStartScreen() {
         keyOverlay.classList.remove('hidden');
     });
 
+    bindTap(legalNoticeBtn, openLegalNotice);
+    bindTap(closeLegalNoticeBtn, closeLegalNotice);
     bindTap(settingsBtn, openPauseDialog);
     bindTap(fullscreenBtn, toggleFullscreenMode);
     bindTap(closePauseBtn, closePauseDialog);
@@ -863,6 +889,13 @@ function setupStartScreen() {
         event.preventDefault();
         event.stopPropagation();
         keyOverlay.classList.add('hidden');
+    }, { passive: false });
+
+    legalNoticeBackdrop.addEventListener('click', closeLegalNotice);
+    legalNoticeBackdrop.addEventListener('touchend', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeLegalNotice();
     }, { passive: false });
 }
 
