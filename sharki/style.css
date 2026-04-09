@@ -1,0 +1,1002 @@
+/*
+ * - Definiert zentrale CSS-Variablen für Größen und Safe-Areas.
+ */
+
+:root {
+    --app-height: 100vh;
+    --vvh: 100vh;
+    --vvw: 100vw;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+html, body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: pan-x pan-y;
+    -webkit-text-size-adjust: 100%;
+}
+
+/*
+ * - Stylt den Bereich *.
+ */
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+html, body, canvas, button, img, .game-wrapper, .touch-controls, .touch-button, .fullscreen-button, .settings-button {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/*
+ * - Blendet Elemente zuverlässig aus.
+ */
+
+.hidden {
+    display: none !important;
+}
+
+
+button,
+.menu-button,
+.settings-button,
+.fullscreen-button,
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button {
+    pointer-events: auto;
+    touch-action: manipulation;
+}
+
+.touch-controls,
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-controls * {
+    touch-action: none;
+}
+
+.startscreen,
+.key-overlay,
+.pause-overlay,
+#resultOverlay,
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body {
+    min-height: var(--app-height);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom)) max(16px, var(--safe-left));
+    background: #001018;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body.touch-landscape,
+body.fullscreen-active,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body.pseudo-fullscreen-active {
+    padding: 0;
+    margin: 0;
+    gap: 0;
+    width: 100vw;
+    height: var(--vvh);
+    min-height: var(--vvh);
+    max-height: var(--vvh);
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+}
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body.touch-landscape {
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+/*
+ * - Stylt den Bereich h1.
+ */
+
+h1 {
+    margin: 0;
+    color: white;
+    text-align: center;
+}
+
+body.touch-landscape h1,
+body.fullscreen-active h1,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body.pseudo-fullscreen-active h1 {
+    display: none;
+}
+
+/*
+ * - Begrenzt den Spielcontainer und passt ihn an Gerät oder Fullscreen an.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+.game-wrapper {
+    position: relative;
+    width: 820px;
+    height: 480px;
+    max-width: 100%;
+    max-height: calc(var(--vvh) - 88px);
+    overflow: hidden;
+    background: #000;
+    flex: 0 0 auto;
+    isolation: isolate;
+    touch-action: none;
+}
+
+.game-wrapper.game-wrapper--touch-landscape,
+.game-wrapper.game-wrapper--fullscreen,
+
+/*
+ * - Begrenzt den Spielcontainer und passt ihn an Gerät oder Fullscreen an.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+.game-wrapper.game-wrapper--pseudo-fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: var(--vvh);
+    max-width: 100vw;
+    max-height: var(--vvh);
+}
+
+/*
+ * - Positioniert die Spielfläche und hält den sichtbaren Spielbereich stabil.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    background-color: black;
+    transform: translate(-50%, -50%);
+}
+
+.startscreen,
+.key-overlay,
+.pause-overlay,
+
+/*
+ * - Stylt den Bereich #resultOverlay.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+#resultOverlay {
+    position: absolute;
+    inset: 0;
+}
+
+/*
+ * - Gestaltet den Startbildschirm samt Ein- und Ausblendung.
+ */
+
+.startscreen {
+    z-index: 20;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 350ms ease, visibility 350ms ease, transform 350ms ease;
+}
+
+/*
+ * - Gestaltet den Startbildschirm samt Ein- und Ausblendung.
+ */
+
+.startscreen--hide {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.02);
+    pointer-events: none;
+}
+
+/*
+ * - Gestaltet den Startbildschirm samt Ein- und Ausblendung.
+ */
+
+.startscreen__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.startscreen__buttons {
+    position: absolute;
+    left: 50%;
+    bottom: 42px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.menu-button {
+    min-width: 140px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 999px;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    color: white;
+    background: rgba(0, 73, 112, 0.88);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    transition: transform 180ms ease, opacity 180ms ease, background 180ms ease;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.menu-button:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 95, 145, 0.95);
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.menu-button--secondary {
+    background: rgba(18, 47, 74, 0.88);
+}
+
+.key-overlay,
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay {
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.key-overlay__backdrop,
+.pause-overlay__backdrop,
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.key-overlay__backdrop {
+    background: rgba(45, 45, 45, 0.72);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay__backdrop {
+    background: rgba(7, 21, 35, 0.7);
+    backdrop-filter: blur(3px);
+}
+
+.key-overlay__dialog,
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay__dialog {
+    position: relative;
+    z-index: 1;
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.key-overlay__dialog {
+    max-width: 72%;
+    padding: 14px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.key-overlay__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: contain;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.settings-button {
+    position: absolute;
+    top: clamp(10px, 2.2vw, 18px);
+    right: clamp(10px, 2.2vw, 18px);
+    z-index: 45;
+    width: clamp(44px, 6vw, 58px);
+    height: clamp(44px, 6vw, 58px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.96);
+    cursor: pointer;
+    transition: transform 180ms ease, background 180ms ease;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.settings-button:hover {
+    transform: scale(1.06);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.settings-button__icon {
+    font-size: clamp(28px, 4vw, 36px);
+    line-height: 1;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay__dialog {
+    width: min(72%, 420px);
+    padding: clamp(20px, 3vw, 28px);
+    border-radius: 24px;
+    background: rgba(1, 40, 63, 0.9);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay__title {
+    margin: 0 0 20px;
+    text-align: center;
+    color: white;
+    font-size: clamp(26px, 4vw, 34px);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.pause-overlay__actions {
+    display: grid;
+    gap: 12px;
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.pause-overlay__actions .menu-button {
+    width: 100%;
+    font-size: clamp(20px, 3vw, 24px);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.result-overlay__text {
+    margin: 0 0 18px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.fullscreen-button {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    z-index: 50;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.88;
+    transition: transform 180ms ease, opacity 180ms ease;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.fullscreen-button:hover {
+    transform: scale(1.04);
+    opacity: 1;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.fullscreen-button__image {
+    display: block;
+    width: 132px;
+    height: auto;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__backdrop {
+    background: rgba(0, 9, 14, 0.96);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 420px);
+    padding: 24px;
+    border-radius: 24px;
+    background: rgba(3, 46, 72, 0.94);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+.orientation-overlay__title,
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__text {
+    color: white;
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__title {
+    margin: 0 0 12px;
+    font-size: clamp(26px, 6vw, 34px);
+}
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+.orientation-overlay__text {
+    margin: 0;
+    font-size: clamp(16px, 4vw, 20px);
+    line-height: 1.4;
+}
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-controls {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    touch-action: none;
+}
+
+.touch-controls__cluster,
+.touch-controls__row,
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button--fullscreen {
+    position: absolute;
+    pointer-events: auto;
+}
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-controls__cluster--left {
+    left: max(10px, env(safe-area-inset-left));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 6px);
+    display: flex;
+    gap: 10px;
+}
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-controls__cluster--right {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 6px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-controls__row {
+    position: static;
+    display: flex;
+    gap: 10px;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button--fullscreen {
+    left: 50%;
+    transform: translateX(-50%);
+    top: calc(max(12px, env(safe-area-inset-top)) + 8px);
+    bottom: auto;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button {
+    min-width: 56px;
+    height: 56px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    touch-action: none;
+    appearance: none;
+    -webkit-appearance: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button--wide {
+    min-width: 124px;
+    padding: 0 18px;
+    font-size: 18px;
+}
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button--icon {
+    min-width: 64px;
+    width: 64px;
+}
+
+.touch-button:active,
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+.touch-button.is-active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.24);
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .fullscreen-button {
+        display: none;
+    }
+
+/*
+ * - Regelt Touch-Bedienung und mobile Eingabeflächen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .touch-controls:not(.hidden) {
+        display: block;
+    }
+}
+
+@media (max-width: 1024px), (max-height: 740px) {
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+    body {
+        justify-content: center;
+        padding: 10px;
+    }
+
+    body.touch-landscape,
+    body.fullscreen-active,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+    body.pseudo-fullscreen-active {
+        padding: 0;
+    }
+
+/*
+ * - Stylt den Bereich h1.
+ */
+
+    h1 {
+        font-size: clamp(26px, 6vw, 36px);
+    }
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .fullscreen-button__image {
+        width: 96px;
+    }
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .menu-button {
+        min-width: 120px;
+        font-size: clamp(18px, 4vw, 24px);
+    }
+}
+
+@media (max-width: 768px) {
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .touch-button {
+        min-width: 50px;
+        height: 50px;
+        font-size: 20px;
+        border-radius: 16px;
+    }
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .touch-button--wide {
+        min-width: 108px;
+        font-size: 16px;
+    }
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .touch-button--icon {
+        min-width: 58px;
+        width: 58px;
+    }
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+    .pause-overlay__dialog {
+        width: min(86%, 320px);
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+    .pause-overlay__title {
+        margin-bottom: 14px;
+        font-size: clamp(20px, 5vw, 26px);
+    }
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ */
+
+    .pause-overlay__actions {
+        gap: 10px;
+    }
+
+/*
+ * - Formatiert ein Overlay für Hinweise, Pause oder Ergebnisanzeigen.
+ * - Legt Ebenen, Positionierung oder Hintergründe für eingeblendete Masken fest.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .pause-overlay__actions .menu-button {
+        min-width: 0;
+        padding: 10px 16px;
+        font-size: clamp(16px, 4.2vw, 20px);
+    }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: portrait), (max-width: 1024px) and (orientation: portrait) {
+    .game-wrapper,
+
+/*
+ * - Stylt den Bereich h1.
+ */
+
+    h1 {
+        visibility: hidden;
+    }
+}
+
+
+@media (max-width: 768px) {
+
+/*
+ * - Stylt interaktive Buttons für Menü, Touch oder Fullscreen.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+    .touch-button--fullscreen {
+        top: calc(max(8px, env(safe-area-inset-top)) + 6px);
+    }
+}
+
+body.touch-landscape .game-wrapper,
+body.pseudo-fullscreen-active .game-wrapper,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body.fullscreen-active .game-wrapper {
+    border-radius: 0;
+}
+
+body.touch-landscape .startscreen__image,
+body.pseudo-fullscreen-active .startscreen__image,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Beeinflusst Größe, Ausrichtung oder sichtbaren Spielbereich.
+ */
+
+body.fullscreen-active .startscreen__image {
+    object-fit: contain;
+    object-position: center center;
+    background: #000;
+}
+
+body.touch-landscape .startscreen__buttons,
+body.pseudo-fullscreen-active .startscreen__buttons,
+
+/*
+ * - Steuert Grundlayout, Viewport-Verhalten und globale Abstände.
+ * - Ist wichtig für responsive Darstellung auf mobilen Geräten oder im Fullscreen.
+ * - Verbessert Bedienbarkeit, Touch-Verhalten und visuelles Feedback.
+ */
+
+body.fullscreen-active .startscreen__buttons {
+    bottom: calc(max(20px, env(safe-area-inset-bottom)) + 18px);
+}
+
+@supports (height: 100svh) {
+
+/*
+ * - Definiert zentrale CSS-Variablen für Größen und Safe-Areas.
+ */
+
+    :root {
+        --app-height: 100svh;
+    }
+}
