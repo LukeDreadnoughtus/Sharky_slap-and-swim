@@ -671,7 +671,7 @@ canvas {
     left: max(10px, env(safe-area-inset-left));
     bottom: calc(max(12px, env(safe-area-inset-bottom)) + 6px);
     display: flex;
-    gap: 10px;
+    align-items: flex-end;
 }
 
 /*
@@ -697,6 +697,28 @@ canvas {
     position: static;
     display: flex;
     gap: 10px;
+}
+
+.touch-controls__dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.touch-controls__dpad-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.touch-controls__dpad-row--top {
+    width: 100%;
+}
+
+.touch-controls__dpad-row--bottom {
+    width: 100%;
 }
 
 /*
@@ -1011,6 +1033,7 @@ body.fullscreen-active .startscreen__buttons {
     justify-content: center;
     padding: 16px;
     box-sizing: border-box;
+    touch-action: pan-y;
 }
 
 .legal-overlay__backdrop {
@@ -1034,6 +1057,7 @@ body.fullscreen-active .startscreen__buttons {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     color: white;
     box-sizing: border-box;
+    touch-action: pan-y;
 }
 
 .legal-overlay__header {
@@ -1048,7 +1072,9 @@ body.fullscreen-active .startscreen__buttons {
     margin-top: 8px;
     padding: 4px 10px 8px 0;
     box-sizing: border-box;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .legal-overlay__header h2 {

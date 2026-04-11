@@ -167,11 +167,22 @@ function shouldAutoEnterResponsiveFullscreen() {
 }
 
 async function ensureResponsiveFullscreen() {
+    const gameWrapper = getGameWrapper();
+
+    if (!gameWrapper) {
+        return;
+    }
+
     if (!shouldAutoEnterResponsiveFullscreen() || isFullscreenActive()) {
         return;
     }
 
-    await toggleFullscreenMode();
+    // Nur CSS-/Pseudo-Fullscreen automatisch aktivieren
+    pseudoFullscreenActive = true;
+    gameWrapper.classList.add('game-wrapper--pseudo-fullscreen');
+
+    updateFullscreenButtonIcon();
+    syncGameViewport();
 }
 
 /**
@@ -408,12 +419,13 @@ async function showStartScreen() {
     resetKeyboardState();
     closeResultDialog();
     closePauseDialog();
-    toggleInGameUi(false);
-    updateOrientationPrompt();
 
     if (startScreen) {
         startScreen.classList.remove('startscreen--hide');
     }
+
+    toggleInGameUi(false);
+    updateOrientationPrompt();
 
     if (window.gameAudio) {
         window.gameAudio.startIntroLoop();

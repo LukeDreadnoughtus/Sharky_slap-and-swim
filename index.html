@@ -170,8 +170,16 @@
 
         <div id="touchControls" class="touch-controls hidden" aria-hidden="true">
             <div class="touch-controls__cluster touch-controls__cluster--left">
-                <button class="touch-button" type="button" data-key="LEFT" aria-label="Move left">◀</button>
-                <button class="touch-button" type="button" data-key="RIGHT" aria-label="Move right">▶</button>
+                <div class="touch-controls__dpad" aria-label="Movement controls">
+                    <div class="touch-controls__dpad-row touch-controls__dpad-row--top">
+                        <button class="touch-button" type="button" data-key="UP" aria-label="Move up">▲</button>
+                    </div>
+                    <div class="touch-controls__dpad-row touch-controls__dpad-row--bottom">
+                        <button class="touch-button" type="button" data-key="LEFT" aria-label="Move left">◀</button>
+                        <button class="touch-button" type="button" data-key="DOWN" aria-label="Move down">▼</button>
+                        <button class="touch-button" type="button" data-key="RIGHT" aria-label="Move right">▶</button>
+                    </div>
+                </div>
             </div>
             <button class="touch-button touch-button--fullscreen touch-button--icon" id="mobileFullscreenBtn" type="button" aria-label="Toggle fullscreen">⛶</button>
             <div class="touch-controls__cluster touch-controls__cluster--right">

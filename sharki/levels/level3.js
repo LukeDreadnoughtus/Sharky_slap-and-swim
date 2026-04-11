@@ -1,5 +1,5 @@
 const LEVEL_3_ENEMIES = [
-    ...Array.from({ length: 3 }, () => ({
+    ...Array.from({ length: 7 }, () => ({
         variant: 'jelly_yellow',
         y: 300,
         width: 120,
@@ -11,7 +11,7 @@ const LEVEL_3_ENEMIES = [
         minSpeed: 0.2,
         maxSpeed: 0.75
     })),
-    ...Array.from({ length: 5 }, () => ({
+    ...Array.from({ length: 9 }, () => ({
         variant: 'jelly_green',
         y: 255,
         width: 115,
@@ -26,7 +26,7 @@ const LEVEL_3_ENEMIES = [
         verticalRange: 165,
         verticalSpeed: 1.35
     })),
-    ...Array.from({ length: 7 }, () => ({
+    ...Array.from({ length: 11 }, () => ({
         variant: 'jelly_pink',
         y: 250,
         width: 120,
@@ -42,7 +42,7 @@ const LEVEL_3_ENEMIES = [
         verticalRange: 160,
         verticalSpeed: 1.7
     })),
-    ...Array.from({ length: 7 }, () => ({
+    ...Array.from({ length: 21 }, () => ({
         variant: 'transition3',
         spawnAllLanes: true,
         minSpeed: 0.2,

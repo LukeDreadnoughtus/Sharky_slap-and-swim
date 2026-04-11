@@ -6,6 +6,7 @@ class DrawableObject {
     y = 300;
     height = 150;
     width = 100;
+    static SHOW_DEBUG_VISUALS = false;
 
     /**
      * - Spielt Medien ab oder lädt benötigte Ressourcen.
@@ -35,7 +36,7 @@ class DrawableObject {
      */
 
     drawFrame(ctx){
-        if (this.isRemoved) {
+        if (this.isRemoved || !DrawableObject.SHOW_DEBUG_VISUALS) {
             return;
         }
 
@@ -63,7 +64,7 @@ class DrawableObject {
      */
 
     drawAttackLine(ctx) {
-        if (!(this instanceof Character)) {
+        if (!(this instanceof Character) || !DrawableObject.SHOW_DEBUG_VISUALS) {
             return;
         }
 

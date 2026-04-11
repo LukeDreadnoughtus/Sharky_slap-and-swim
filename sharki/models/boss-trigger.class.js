@@ -25,7 +25,7 @@ class BossTrigger extends DrawableObject {
      */
 
     draw(ctx) {
-        if (this.isRemoved) {
+        if (this.isRemoved || !DrawableObject.SHOW_DEBUG_VISUALS) {
             return;
         }
 

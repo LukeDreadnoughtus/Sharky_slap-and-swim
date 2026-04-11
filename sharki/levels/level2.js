@@ -1,5 +1,5 @@
 const LEVEL_2_ENEMIES = [
-    ...Array.from({ length: 3 }, () => ({ variant: 'transition2', spawnAllLanes: true })),
+    ...Array.from({ length: 9 }, () => ({ variant: 'transition2', spawnAllLanes: true })),
     ...Array.from({ length: 5 }, () => ({
         variant: 'jelly_lila',
         y: 200,
@@ -15,7 +15,7 @@ const LEVEL_2_ENEMIES = [
         verticalRange: 110,
         verticalSpeed: 1
     })),
-    ...Array.from({ length: 5 }, () => ({
+    ...Array.from({ length: 6 }, () => ({
         variant: 'jelly_yellow',
         y: 300,
         width: 120,
