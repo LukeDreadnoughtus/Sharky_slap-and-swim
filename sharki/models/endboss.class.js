@@ -4,6 +4,11 @@ class Endboss extends MovableObject {
     y = 70;
     speed = 0.35;
     movementSpeed = 0.35;
+    verticalMovementSpeed = 2.3;
+    verticalTrackingTolerance = 8;
+    verticalTargetOffset = 10;
+    minY = -380;
+    maxY = 110;
     damage = 8;
     attackCooldown = 1200;
 
@@ -91,6 +96,11 @@ class Endboss extends MovableObject {
         this.energy = config.energy ?? 100;
         this.speed = config.speed ?? this.speed;
         this.movementSpeed = config.movementSpeed ?? config.speed ?? this.movementSpeed;
+        this.verticalMovementSpeed = config.verticalMovementSpeed ?? this.verticalMovementSpeed;
+        this.verticalTrackingTolerance = config.verticalTrackingTolerance ?? this.verticalTrackingTolerance;
+        this.verticalTargetOffset = config.verticalTargetOffset ?? this.verticalTargetOffset;
+        this.minY = config.minY ?? this.minY;
+        this.maxY = config.maxY ?? this.maxY;
         this.targetX = config.x ?? 2500;
         this.introOffset = config.introOffset ?? 160;
         this.introFrameDuration = config.introFrameDuration ?? 150;
@@ -215,6 +225,8 @@ class Endboss extends MovableObject {
         } else if (characterCenter > bossCenter + 5) {
             this.x += this.movementSpeed;
         }
+
+        this.updateVerticalMovement(character);
     }
 
     /**
@@ -233,6 +245,56 @@ class Endboss extends MovableObject {
      * - Prüft einen Zustand oder liefert eine boolesche Aussage.
      * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
      */
+
+
+    /**
+     * - Lässt den Endboss dem Charakter vertikal folgen.
+     * - Arbeitet mit Hitbox-Zentren, damit große Sprite-Höhen das Tracking nicht verfälschen.
+     */
+
+    updateVerticalMovement(character) {
+        const bossCenterY = this.getBossTrackingCenterY();
+        const targetCenterY = this.getCharacterTrackingCenterY(character) + this.verticalTargetOffset;
+        const verticalDelta = targetCenterY - bossCenterY;
+
+        if (Math.abs(verticalDelta) <= this.verticalTrackingTolerance) {
+            return;
+        }
+
+        if (verticalDelta < 0) {
+            this.y -= this.verticalMovementSpeed;
+        } else {
+            this.y += this.verticalMovementSpeed;
+        }
+
+        this.clampVerticalPosition();
+    }
+
+    /**
+     * - Liefert den relevanten Y-Mittelpunkt des Endbosses für das Tracking.
+     */
+
+    getBossTrackingCenterY() {
+        return this.y + this.hitboxOffsetY + this.hitboxHeight / 2;
+    }
+
+    /**
+     * - Liefert den relevanten Y-Mittelpunkt des Charakters für das Tracking.
+     */
+
+    getCharacterTrackingCenterY(character) {
+        const hitboxOffsetY = character.hitboxOffsetY ?? 0;
+        const hitboxHeight = character.hitboxHeight ?? character.height ?? 0;
+        return character.y + hitboxOffsetY + hitboxHeight / 2;
+    }
+
+    /**
+     * - Begrenzt die vertikale Bewegung des Endbosses.
+     */
+
+    clampVerticalPosition() {
+        this.y = Math.max(this.minY, Math.min(this.maxY, this.y));
+    }
 
     canStartAttack() {
         return this.introFinished &&

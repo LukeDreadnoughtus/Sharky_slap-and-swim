@@ -7,8 +7,23 @@ const ENEMY_START_X = 450;
 const ENEMY_END_X = BOSS_TRIGGER_X - 140;
 const ENEMY_MIN_DISTANCE = 220;
 const LEVEL_1_ENEMIES = [
-    ...Array.from({ length: 7 }, () => ({ variant: 'default' })),
-    ...Array.from({ length: 3 }, () => ({ variant: 'transition2' }))
+    ...Array.from({ length: 11 }, () => ({ variant: 'default', spawnAllLanes: true })),
+    ...Array.from({ length: 9 }, () => ({ variant: 'transition2', spawnAllLanes: true })),
+    ...Array.from({ length: 5 }, () => ({
+        variant: 'jelly_lila',
+        y: 180,
+        width: 110,
+        height: 110,
+        hitboxOffsetX: 18,
+        hitboxOffsetY: 16,
+        hitboxWidth: 70,
+        hitboxHeight: 78,
+        minSpeed: 0.15,
+        maxSpeed: 0.65,
+        movementPattern: 'vertical',
+        verticalRange: 150,
+        verticalSpeed: 1
+    }))
 ];
 
 /**
@@ -23,7 +38,7 @@ function createLevel1() {
         new Endboss({ energy: 100, x: 819 * 11 + 120 })
     ],
     createBackgroundObjects('D'),
-    createCoins(14, 260, COIN_START_X, COIN_END_X, 340),
+    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
     [
         new BossTrigger(BOSS_TRIGGER_X, 110, 300)
     ],

@@ -4,6 +4,8 @@ class Character extends MovableObject{
 
     y = 190;
     speed = 10;
+    minY = -70;
+    maxY = 230;
 
     hitboxOffsetX = 120;
     hitboxOffsetY = 140;
@@ -138,8 +140,22 @@ class Character extends MovableObject{
         this.loadImages(this.IMAGES_ELECTRIC_HURT);
         this.loadImages(this.IMAGES_BUBBLE_ATTACK);
         this.loadImages(this.IMAGES_POISON_BUBBLE_ATTACK);
-        this.applyGravity();
         this.animate();
+    }
+
+
+    clampVerticalPosition() {
+        this.y = Math.max(this.minY, Math.min(this.y, this.maxY));
+    }
+
+    swimUp() {
+        this.y -= this.speed;
+        this.clampVerticalPosition();
+    }
+
+    swimDown() {
+        this.y += this.speed;
+        this.clampVerticalPosition();
     }
 
     /**
@@ -169,7 +185,17 @@ class Character extends MovableObject{
                     this.x -= this.speed;
                     this.otherDirection = true;
                 }
+
+                if (this.world.keyboard.UP) {
+                    this.swimUp();
+                }
+
+                if (this.world.keyboard.DOWN) {
+                    this.swimDown();
+                }
             }
+
+            this.clampVerticalPosition();
 
             if (this.world.keyboard.SPACE && !this.isSlapping && !this.isBubbleAttacking) {
                 this.slap();
@@ -208,7 +234,7 @@ class Character extends MovableObject{
                     this.currentImage = 0;
                     this.slapTargetsHit.clear();
                 }
-            } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+            } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
                 this.playAnimation(this.IMAGES_SWIM);
             } else {
                 this.playAnimation(this.IMAGES_WALKING);

@@ -9,8 +9,8 @@ class ThrowableObject extends MovableObject {
 
     width = 45;
     height = 45;
-    speedX = 12;
-    speedY = -8;
+    speedX = 9;
+    speedY = -7;
     gravity = 0.45;
     direction = 1;
     isRemoved = false;
@@ -62,7 +62,7 @@ class ThrowableObject extends MovableObject {
             this.y += this.speedY;
             this.speedY += this.gravity;
 
-            if (this.y > this.startY + 140) {
+            if (this.y > this.startY + 100) {
                 this.remove();
             }
         }, 1000 / 60);

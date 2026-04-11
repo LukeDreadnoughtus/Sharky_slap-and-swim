@@ -23,7 +23,7 @@ const LEVEL_3_ENEMIES = [
         minSpeed: 0.15,
         maxSpeed: 0.65,
         movementPattern: 'vertical',
-        verticalRange: 130,
+        verticalRange: 165,
         verticalSpeed: 1.35
     })),
     ...Array.from({ length: 7 }, () => ({
@@ -39,11 +39,12 @@ const LEVEL_3_ENEMIES = [
         maxSpeed: 0.65,
         damage: 8,
         movementPattern: 'vertical',
-        verticalRange: 145,
+        verticalRange: 160,
         verticalSpeed: 1.7
     })),
     ...Array.from({ length: 7 }, () => ({
         variant: 'transition3',
+        spawnAllLanes: true,
         minSpeed: 0.2,
         maxSpeed: 0.7
     }))
@@ -63,13 +64,14 @@ function createLevel3() {
             x: 819 * 11 + 120,
             speed: 0.5,
             movementSpeed: 5.0,
+            verticalMovementSpeed: 3.3,
             introFrameDuration: 100,
             introWaitTime: 1800,
             moveWhileHurt: true
         })
     ],
     createBackgroundObjects('L'),
-    createCoins(44, 260, COIN_START_X, COIN_END_X, 340),
+    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
     [
         new BossTrigger(BOSS_TRIGGER_X, 110, 300)
     ],

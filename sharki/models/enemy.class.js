@@ -1,4 +1,10 @@
 class Shark extends MovableObject{
+    static JELLYFISH_VERTICAL_LIMITS = {
+        minY: 30,
+        maxY: 330,
+        verticalRange: 150
+    };
+
     static VARIANTS = {
         default: {
             swimImage: 'sharki/img/2.Enemy/1.Puffer fish (3 color options)/1.Swim/1.swim1.png',
@@ -136,6 +142,8 @@ class Shark extends MovableObject{
     verticalDirection = 1;
     verticalRange = 80;
     verticalSpeed = 0.8;
+    minY = null;
+    maxY = null;
 
     constructor(config = {}){
         const variantName = config.variant ?? 'default';
@@ -159,7 +167,17 @@ class Shark extends MovableObject{
         this.speed = config.speed ?? 0.15 + Math.random() * 0.5;
         this.movementPattern = config.movementPattern ?? this.movementPattern;
         this.baseY = this.y;
-        this.verticalRange = config.verticalRange ?? this.verticalRange;
+
+        if (this.variant.startsWith('jelly_')) {
+            this.minY = config.minY ?? Shark.JELLYFISH_VERTICAL_LIMITS.minY;
+            this.maxY = config.maxY ?? Shark.JELLYFISH_VERTICAL_LIMITS.maxY;
+            this.verticalRange = config.verticalRange ?? Shark.JELLYFISH_VERTICAL_LIMITS.verticalRange;
+        } else {
+            this.minY = config.minY ?? this.minY;
+            this.maxY = config.maxY ?? this.maxY;
+            this.verticalRange = config.verticalRange ?? this.verticalRange;
+        }
+
         this.verticalSpeed = config.verticalSpeed ?? this.verticalSpeed;
 
         this.loadImages(this.IMAGES_WALKING);
@@ -232,11 +250,14 @@ class Shark extends MovableObject{
 
             this.y += this.verticalSpeed * this.verticalDirection;
 
-            if (this.y >= this.baseY + this.verticalRange) {
-                this.y = this.baseY + this.verticalRange;
+            const upperLimit = this.minY ?? (this.baseY - this.verticalRange);
+            const lowerLimit = this.maxY ?? (this.baseY + this.verticalRange);
+
+            if (this.y >= lowerLimit) {
+                this.y = lowerLimit;
                 this.verticalDirection = -1;
-            } else if (this.y <= this.baseY - this.verticalRange) {
-                this.y = this.baseY - this.verticalRange;
+            } else if (this.y <= upperLimit) {
+                this.y = upperLimit;
                 this.verticalDirection = 1;
             }
         }, 1000 / 60);

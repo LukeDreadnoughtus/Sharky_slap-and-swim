@@ -1,8 +1,8 @@
 const LEVEL_2_ENEMIES = [
-    ...Array.from({ length: 3 }, () => ({ variant: 'transition2' })),
+    ...Array.from({ length: 3 }, () => ({ variant: 'transition2', spawnAllLanes: true })),
     ...Array.from({ length: 5 }, () => ({
         variant: 'jelly_lila',
-        y: 265,
+        y: 200,
         width: 110,
         height: 110,
         hitboxOffsetX: 18,
@@ -12,7 +12,7 @@ const LEVEL_2_ENEMIES = [
         minSpeed: 0.15,
         maxSpeed: 0.65,
         movementPattern: 'vertical',
-        verticalRange: 120,
+        verticalRange: 110,
         verticalSpeed: 1
     })),
     ...Array.from({ length: 5 }, () => ({
@@ -49,7 +49,7 @@ function createLevel2() {
         })
     ],
     createBackgroundObjects('L'),
-    createCoins(24, 260, COIN_START_X, COIN_END_X, 340),
+    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
     [
         new BossTrigger(BOSS_TRIGGER_X, 110, 300)
     ],

@@ -1117,6 +1117,11 @@ body.fullscreen-active .startscreen__buttons {
     bottom: 72px;
 }
 
+.startscreen .settings-button {
+    top: 14px;
+    right: 14px;
+}
+
 @media (max-width: 900px) {
     .legal-overlay__dialog {
         width: min(94%, 720px);

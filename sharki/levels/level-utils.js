@@ -1,9 +1,22 @@
+const BOTTOM_LANE_Y = 310;
+const MIDDLE_LANE_Y = 200;
+const TOP_LANE_Y = 90;
+const ALL_LANES = [BOTTOM_LANE_Y, MIDDLE_LANE_Y, TOP_LANE_Y];
+
+/**
+ * - Liest Daten aus und gibt einen passenden Wert zurück.
+ * - Gehört zur Levellogik für level utils und liefert Spawn-Linien.
+ */
+function getRandomLaneY() {
+    return ALL_LANES[Math.floor(Math.random() * ALL_LANES.length)];
+}
+
 /**
  * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
  * - Gehört zur Levellogik für level utils und setzt Spielfeld-Inhalte zusammen.
  */
 
-function createCollectables(CollectableClass, amount, minDistance, startX, endX, y) {
+function createCollectables(CollectableClass, amount, minDistance, startX, endX, y, randomizeLane = false) {
     let collectables = [];
     let range = endX - startX;
     let maxAmount = Math.floor(range / minDistance) + 1;
@@ -17,7 +30,8 @@ function createCollectables(CollectableClass, amount, minDistance, startX, endX,
         let randomOffset = maxRandomOffset > 0 ? Math.random() * maxRandomOffset : 0;
 
         currentX += randomOffset;
-        collectables.push(new CollectableClass(currentX, y));
+        const spawnY = randomizeLane ? getRandomLaneY() : y;
+        collectables.push(new CollectableClass(currentX, spawnY));
 
         currentX += minDistance;
         freeSpace -= randomOffset;
@@ -33,7 +47,7 @@ function createCollectables(CollectableClass, amount, minDistance, startX, endX,
  */
 
 function createCoins(amount, minDistance, startX, endX, y) {
-    return createCollectables(Coin, amount, minDistance, startX, endX, y);
+    return createCollectables(Coin, amount, minDistance, startX, endX, y, true);
 }
 
 /**
@@ -43,7 +57,7 @@ function createCoins(amount, minDistance, startX, endX, y) {
  */
 
 function createPoisonBubbles(amount, minDistance, startX, endX, y) {
-    let positions = createCollectables(PoisonBubble, amount, minDistance, startX, endX, y);
+    let positions = createCollectables(PoisonBubble, amount, minDistance, startX, endX, y, true);
 
     return positions.map((bubble) => {
         let imagePath = Math.random() < 0.5
@@ -76,10 +90,13 @@ function createEnemies(enemyConfigs, minDistance, startX, endX) {
         let minSpeed = config.minSpeed ?? 0.15;
         let maxSpeed = config.maxSpeed ?? 0.65;
 
+        const spawnY = config.spawnAllLanes ? getRandomLaneY() : (config.y ?? BOTTOM_LANE_Y);
+
         currentX += randomOffset;
         enemies.push(new Shark({
             ...config,
             x: currentX,
+            y: spawnY,
             speed: config.speed ?? (minSpeed + Math.random() * Math.max(0, maxSpeed - minSpeed))
         }));
 

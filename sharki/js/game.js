@@ -162,6 +162,18 @@ const FULLSCREEN_ICONS = {
 
 let pseudoFullscreenActive = false;
 
+function shouldAutoEnterResponsiveFullscreen() {
+    return isTouchViewport() && !isPortraitTouchDevice();
+}
+
+async function ensureResponsiveFullscreen() {
+    if (!shouldAutoEnterResponsiveFullscreen() || isFullscreenActive()) {
+        return;
+    }
+
+    await toggleFullscreenMode();
+}
+
 /**
  * - Liest Daten aus und gibt einen passenden Wert zurück.
  * - Gehört zur Steuerlogik von game und verbindet UI, Audio oder Spielstart.
@@ -270,14 +282,14 @@ async function toggleFullscreenMode() {
     } catch (error) {
         pseudoFullscreenActive = !pseudoFullscreenActive;
         gameWrapper.classList.toggle('game-wrapper--pseudo-fullscreen', pseudoFullscreenActive);
-        console.error('Fullscreen konnte nicht umgeschaltet werden.', error);
+        console.error('Fullscreen could not be toggled.', error);
     } finally {
         if (isTouchViewport()) {
             try {
                 document.documentElement.style.height = `${getViewportMetrics().height}px`;
                 document.body.style.height = `${getViewportMetrics().height}px`;
             } catch (error) {
-                console.warn('Viewport-Höhe konnte nicht gesetzt werden.', error);
+                console.warn('Viewport height could not be set.', error);
             }
             window.scrollTo(0, 1);
         }
@@ -358,17 +370,19 @@ function createWorld(levelNumber = 1) {
  * - Greift dabei auf level, Audio zu.
  */
 
-function init(levelNumber = 1) {
+async function init(levelNumber = 1) {
     closeResultDialog();
     createWorld(levelNumber);
     toggleInGameUi(true);
     closePauseDialog();
     updateOrientationPrompt();
+    await ensureResponsiveFullscreen();
 
     if (window.gameAudio) {
         window.gameAudio.startGameplayLoop();
     }
 }
+
 
 /**
  * - Steuert Sichtbarkeit oder Interaktion in der Oberfläche.
@@ -377,7 +391,7 @@ function init(levelNumber = 1) {
  * - Greift dabei auf world, DOM, Audio zu.
  */
 
-function showStartScreen() {
+async function showStartScreen() {
     const startScreen = document.getElementById('startscreen');
 
     if (world) {
@@ -404,6 +418,8 @@ function showStartScreen() {
     if (window.gameAudio) {
         window.gameAudio.startIntroLoop();
     }
+
+    await ensureResponsiveFullscreen();
 }
 
 /**
@@ -429,8 +445,11 @@ function toggleInGameUi(show) {
     const mobileFullscreenBtn = document.getElementById('mobileFullscreenBtn');
     const touchControls = document.getElementById('touchControls');
 
+    const startScreen = document.getElementById('startscreen');
+    const isStartScreenVisible = Boolean(startScreen && !startScreen.classList.contains('startscreen--hide'));
+
     if (settingsBtn) {
-        settingsBtn.classList.toggle('hidden', !show);
+        settingsBtn.classList.toggle('hidden', !(show || isStartScreenVisible));
     }
 
     if (fullscreenBtn) {
@@ -460,14 +479,18 @@ function openPauseDialog() {
     const pauseOverlay = document.getElementById('pauseOverlay');
     const resultOverlay = document.getElementById('resultOverlay');
 
-    if (!world || !pauseOverlay || (resultOverlay && !resultOverlay.classList.contains('hidden'))) {
+    if (!pauseOverlay || (resultOverlay && !resultOverlay.classList.contains('hidden'))) {
         return;
     }
 
-    world.pause();
-    resetKeyboardState();
+    if (world) {
+        world.pause();
+        resetKeyboardState();
+    }
+
     pauseOverlay.classList.remove('hidden');
 }
+
 
 /**
  * - Steuert Sichtbarkeit oder Interaktion in der Oberfläche.
@@ -547,7 +570,7 @@ function closeResultDialog() {
 function showGameOverDialog() {
     openResultDialog({
         title: 'Game Over',
-        text: 'Sharki wurde besiegt. Möchtest du das Level neu starten oder verlassen?',
+        text: 'Sharki was defeated. Do you want to restart the level or leave the game?',
         showTryAgain: true,
         showLeave: true
     });
@@ -565,10 +588,10 @@ function showLevelCompleteDialog(levelNumber) {
     const nextLevelNumber = levelNumber + 1;
 
     openResultDialog({
-        title: 'Level geschafft',
+        title: 'Level complete',
         text: hasNextLevel
-            ? `Der Endboss ist besiegt. Du kannst jetzt direkt Level ${nextLevelNumber} starten.`
-            : 'Der Endboss ist besiegt. Du hast alle 3 Level abgeschlossen.',
+            ? `The endboss has been defeated. You can start Level ${nextLevelNumber} now.`
+            : 'The endboss has been defeated. You completed all 3 levels.',
         showLeave: !hasNextLevel,
         showNextLevel: hasNextLevel
     });
@@ -847,12 +870,14 @@ function setupStartScreen() {
         muteBtn.textContent = window.gameAudio.muted ? 'Unmute' : 'Mute';
     }
 
-    bindTap(startBtn, () => {
+    bindTap(startBtn, async () => {
         startScreen.classList.add('startscreen--hide');
 
         if (window.gameAudio) {
             window.gameAudio.stopIntroLoopWithFade();
         }
+
+        await ensureResponsiveFullscreen();
 
         window.setTimeout(() => {
             init(1);
@@ -899,8 +924,9 @@ function setupStartScreen() {
     }, { passive: false });
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     setupStartScreen();
+    await ensureResponsiveFullscreen();
     window.scrollTo(0, 0);
 });
 window.addEventListener('fullscreenchange', () => {
@@ -913,31 +939,35 @@ window.addEventListener('webkitfullscreenchange', () => {
     syncGameViewport();
     updateOrientationPrompt();
 });
-window.addEventListener('resize', () => {
+window.addEventListener('resize', async () => {
     syncGameViewport();
     updateOrientationPrompt();
     toggleInGameUi(Boolean(world));
+    await ensureResponsiveFullscreen();
 });
-window.addEventListener('orientationchange', () => {
+window.addEventListener('orientationchange', async () => {
     syncGameViewport();
     updateOrientationPrompt();
     toggleInGameUi(Boolean(world));
+    await ensureResponsiveFullscreen();
 });
 
 if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
+    window.visualViewport.addEventListener('resize', async () => {
         syncGameViewport();
         updateOrientationPrompt();
         toggleInGameUi(Boolean(world));
+        await ensureResponsiveFullscreen();
     });
 }
 
 
-window.addEventListener('pageshow', () => {
+window.addEventListener('pageshow', async () => {
     syncViewportCssVars();
     syncGameViewport();
     updateOrientationPrompt();
     toggleInGameUi(Boolean(world));
+    await ensureResponsiveFullscreen();
     window.scrollTo(0, 0);
 });
 
