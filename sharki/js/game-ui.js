@@ -220,8 +220,8 @@ function isOverlayVisible(element) {
 }
 
 /**
- * Updates the portrait warning overlay and pauses or resumes the world.
- * It coordinates responsive blocking with pause and result dialogs.
+ * Updates the portrait warning overlay and keeps world pause state aligned.
+ * It shows the hint on the start screen and during gameplay on touch devices.
  */
 function updateOrientationPrompt() {
     const orientationOverlay = document.getElementById('orientationOverlay');
@@ -230,21 +230,31 @@ function updateOrientationPrompt() {
         return;
     }
 
-    const shouldBlockGame = isPortraitTouchDevice() && Boolean(world) && !isBlockingOverlayOpen();
-    orientationOverlay.classList.toggle('hidden', !shouldBlockGame);
-    updateWorldPauseStateForOrientation(shouldBlockGame);
+    const shouldShowOverlay = shouldShowOrientationOverlay();
+    orientationOverlay.classList.toggle('hidden', !shouldShowOverlay);
+    updateWorldPauseStateForOrientation(shouldShowOverlay);
+}
+
+/**
+ * Reports whether the portrait warning should be visible right now.
+ * It supports updateOrientationPrompt across the start screen and gameplay.
+ */
+function shouldShowOrientationOverlay() {
+    return isPortraitTouchDevice();
 }
 
 /**
  * Pauses or resumes the world based on the current orientation state.
- * It is called only by updateOrientationPrompt to centralize that side effect.
+ * It is called by updateOrientationPrompt without affecting menu-only screens.
  */
-function updateWorldPauseStateForOrientation(shouldBlockGame) {
+function updateWorldPauseStateForOrientation(shouldShowOverlay) {
     if (!world) {
         return;
     }
 
-    if (shouldBlockGame) {
+    const shouldPauseWorld = shouldShowOverlay && !isBlockingOverlayOpen();
+
+    if (shouldPauseWorld) {
         world.pause();
         resetKeyboardState();
         return;

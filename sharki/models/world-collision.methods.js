@@ -21,20 +21,20 @@ World.prototype.CheckCollisions = function () {
     }, 50);
 };
 
-World.prototype.cleanupRemovedObjects = function () {
     /**
      * Removes objects already marked as deleted from active update arrays.
      * It is called at the start of CheckCollisions before fresh checks run.
      */
+World.prototype.cleanupRemovedObjects = function () {
     this.level.enemies = this.level.enemies.filter((enemy) => !enemy.isRemoved);
     this.throwableObjects = this.throwableObjects.filter((bubble) => !bubble.isRemoved);
 };
 
-World.prototype.handleCharacterDeathState = function () {
     /**
      * Processes the character death branch and stops further collision work.
      * It supports CheckCollisions by returning whether the loop should stop.
      */
+World.prototype.handleCharacterDeathState = function () {
     if (!this.character.isDead()) {
         return false;
     }
@@ -43,11 +43,11 @@ World.prototype.handleCharacterDeathState = function () {
     return true;
 };
 
-World.prototype.checkBossTriggers = function () {
     /**
      * Activates boss triggers once the character enters their collision area.
      * It supports the collision loop and starts the boss intro once.
      */
+World.prototype.checkBossTriggers = function () {
     this.level.bossTriggers.forEach((trigger) => {
         if (trigger.isActivated || !this.character.isColliding(trigger)) {
             return;
@@ -58,11 +58,11 @@ World.prototype.checkBossTriggers = function () {
     });
 };
 
-World.prototype.checkEnemyCollisions = function () {
     /**
      * Updates endboss state, contact damage, and slap hits for each enemy.
      * It coordinates enemy-specific handlers inside the collision loop.
      */
+World.prototype.checkEnemyCollisions = function () {
     this.level.enemies.forEach((enemy) => {
         this.updateEndbossState(enemy);
         this.handleEnemyContact(enemy);
@@ -70,11 +70,11 @@ World.prototype.checkEnemyCollisions = function () {
     });
 };
 
-World.prototype.updateEndbossState = function (enemy) {
     /**
      * Updates endboss behavior and death handling for one enemy instance.
      * It is called by checkEnemyCollisions before contact checks happen.
      */
+World.prototype.updateEndbossState = function (enemy) {
     if (!(enemy instanceof Endboss)) {
         return;
     }
@@ -86,11 +86,11 @@ World.prototype.updateEndbossState = function (enemy) {
     }
 };
 
-World.prototype.handleEnemyContact = function (enemy) {
     /**
      * Routes a direct character collision to the correct enemy handler.
      * It supports checkEnemyCollisions for normal enemies and the endboss.
      */
+World.prototype.handleEnemyContact = function (enemy) {
     if (!this.character.isColliding(enemy)) {
         return;
     }
@@ -103,11 +103,11 @@ World.prototype.handleEnemyContact = function (enemy) {
     this.handleRegularEnemyCollision(enemy);
 };
 
-World.prototype.handleRegularEnemyCollision = function (enemy) {
     /**
      * Applies damage and audio feedback for a non-boss enemy collision.
      * It is used by handleEnemyContact after collision detection succeeds.
      */
+World.prototype.handleRegularEnemyCollision = function (enemy) {
     if (this.character.isHurt()) {
         return;
     }
@@ -118,11 +118,11 @@ World.prototype.handleRegularEnemyCollision = function (enemy) {
     this.playEnemyDamageSound(damageType);
 };
 
-World.prototype.playEnemyDamageSound = function (damageType) {
     /**
      * Plays the matching hurt sound for poison or electric damage.
      * It supports handleRegularEnemyCollision after health was updated.
      */
+World.prototype.playEnemyDamageSound = function (damageType) {
     if (!window.gameAudio) {
         return;
     }
@@ -131,11 +131,11 @@ World.prototype.playEnemyDamageSound = function (damageType) {
     window.gameAudio.play(soundName, { cooldown: 250 });
 };
 
-World.prototype.checkCoinCollisions = function () {
     /**
      * Collects coins, updates the status bar, and plays the pickup sound.
      * It is one pickup branch inside the shared collision loop.
      */
+World.prototype.checkCoinCollisions = function () {
     this.level.coins.forEach((coin) => {
         if (coin.collected || !this.character.isColliding(coin)) {
             return;
@@ -148,11 +148,11 @@ World.prototype.checkCoinCollisions = function () {
     });
 };
 
-World.prototype.checkPoisonBubblePickups = function () {
     /**
      * Collects poison bubbles while respecting the inventory limit.
      * It supports CheckCollisions and the poison projectile mechanic.
      */
+World.prototype.checkPoisonBubblePickups = function () {
     this.level.poisonBubbles.forEach((poisonBubble) => {
         if (this.shouldSkipPoisonBubblePickup(poisonBubble)) {
             return;
@@ -168,19 +168,19 @@ World.prototype.checkPoisonBubblePickups = function () {
     });
 };
 
-World.prototype.shouldSkipPoisonBubblePickup = function (poisonBubble) {
     /**
      * Checks whether one poison bubble pickup should be ignored.
      * It keeps checkPoisonBubblePickups focused on the happy path.
      */
+World.prototype.shouldSkipPoisonBubblePickup = function (poisonBubble) {
     return poisonBubble.collected || this.collectedPoisonBubbles >= this.maxPoisonBubbles;
 };
 
-World.prototype.handleCharacterDeath = function () {
     /**
      * Queues the character result dialog only once after death.
      * It supports the collision loop through handleCharacterDeathState.
      */
+World.prototype.handleCharacterDeath = function () {
     if (this.hasHandledCharacterDeath) {
         return;
     }
@@ -189,11 +189,11 @@ World.prototype.handleCharacterDeath = function () {
     this.queueResultDialog(this.onCharacterDeath);
 };
 
-World.prototype.handleEndbossDeath = function () {
     /**
      * Queues the endboss result dialog only when the character survived.
      * It is called by updateEndbossState after the boss dies.
      */
+World.prototype.handleEndbossDeath = function () {
     if (this.hasHandledEndbossDeath || this.hasHandledCharacterDeath) {
         return;
     }
@@ -202,11 +202,11 @@ World.prototype.handleEndbossDeath = function () {
     this.queueResultDialog(this.onEndbossDeath);
 };
 
-World.prototype.queueResultDialog = function (callback) {
     /**
      * Delays one result callback so the ending animation can breathe.
      * It is shared by character and endboss death handlers.
      */
+World.prototype.queueResultDialog = function (callback) {
     if (this.resultDialogTimeout || typeof callback !== 'function') {
         return;
     }
@@ -214,11 +214,11 @@ World.prototype.queueResultDialog = function (callback) {
     this.resultDialogTimeout = setTimeout(() => this.runResultDialog(callback), 3000);
 };
 
-World.prototype.runResultDialog = function (callback) {
     /**
      * Executes one queued result callback unless the world was destroyed.
      * It finalizes queueResultDialog after the configured delay.
      */
+World.prototype.runResultDialog = function (callback) {
     if (this.isDestroyed) {
         return;
     }
@@ -228,11 +228,11 @@ World.prototype.runResultDialog = function (callback) {
     this.resultDialogTimeout = null;
 };
 
-World.prototype.handleEndbossCollision = function (endboss) {
     /**
      * Starts an endboss attack and applies bite damage to the character.
      * It is used by handleEnemyContact for boss collisions only.
      */
+World.prototype.handleEndbossCollision = function (endboss) {
     if (!endboss || !endboss.canStartAttack() || this.character.isHurt()) {
         return;
     }
@@ -246,11 +246,11 @@ World.prototype.handleEndbossCollision = function (endboss) {
     this.statusBar.setPercentage(this.character.energy);
 };
 
-World.prototype.getDamageTypeForEnemy = function (enemy) {
     /**
      * Returns the damage type used for the given enemy instance.
      * It supports collision sounds and hurt animation selection.
      */
+World.prototype.getDamageTypeForEnemy = function (enemy) {
     if (!enemy || typeof enemy.variant !== 'string') {
         return 'poison';
     }
@@ -258,11 +258,11 @@ World.prototype.getDamageTypeForEnemy = function (enemy) {
     return enemy.variant.startsWith('jelly_') ? 'electric' : 'poison';
 };
 
-World.prototype.checkSlapHit = function (enemy) {
     /**
      * Applies slap damage when the active slap hitbox overlaps one enemy.
      * It cooperates with Character.getSlapHitbox and enemy.hit.
      */
+World.prototype.checkSlapHit = function (enemy) {
     const slapHitbox = this.character.getSlapHitbox();
 
     if (!slapHitbox || this.character.slapTargetsHit.has(enemy)) {
@@ -277,38 +277,38 @@ World.prototype.checkSlapHit = function (enemy) {
     this.character.slapTargetsHit.add(enemy);
 };
 
-World.prototype.isSlapHitboxOverlappingEnemy = function (slapHitbox, enemy) {
     /**
      * Checks a slap hitbox against one enemy hitbox rectangle.
      * It keeps checkSlapHit focused on state changes.
      */
+World.prototype.isSlapHitboxOverlappingEnemy = function (slapHitbox, enemy) {
     return slapHitbox.x + slapHitbox.width > enemy.x + enemy.hitboxOffsetX
         && slapHitbox.y + slapHitbox.height > enemy.y + enemy.hitboxOffsetY
         && slapHitbox.x < enemy.x + enemy.hitboxOffsetX + enemy.hitboxWidth
         && slapHitbox.y < enemy.y + enemy.hitboxOffsetY + enemy.hitboxHeight;
 };
 
-World.prototype.spawnBubbleShot = function () {
     /**
      * Spawns a normal bubble projectile from the character.
      * It delegates the actual projectile creation to spawnThrowableBubble.
      */
+World.prototype.spawnBubbleShot = function () {
     this.spawnThrowableBubble('normal');
 };
 
-World.prototype.spawnPoisonBubbleShot = function () {
     /**
      * Spawns a poison bubble projectile from the character.
      * It complements spawnBubbleShot for the poison inventory mechanic.
      */
+World.prototype.spawnPoisonBubbleShot = function () {
     this.spawnThrowableBubble('poison');
 };
 
-World.prototype.spawnThrowableBubble = function (type = 'normal') {
     /**
      * Creates one throwable bubble and adds it to the active projectile list.
      * It is used by the character attack flow after animation completion.
      */
+World.prototype.spawnThrowableBubble = function (type = 'normal') {
     const spawn = this.character.getBubbleSpawnPosition();
     const bubble = new ThrowableObject(spawn.x, spawn.y, spawn.direction, type);
     bubble.world = this;
@@ -316,11 +316,11 @@ World.prototype.spawnThrowableBubble = function (type = 'normal') {
     this.throwableObjects.push(bubble);
 };
 
-World.prototype.checkThrowableCollisions = function () {
     /**
      * Applies projectile hits to enemies and removes bubbles after contact.
      * It is the projectile branch inside the collision loop.
      */
+World.prototype.checkThrowableCollisions = function () {
     this.throwableObjects.forEach((bubble) => {
         if (bubble.isRemoved || bubble.alreadyHit) {
             return;
@@ -330,11 +330,11 @@ World.prototype.checkThrowableCollisions = function () {
     });
 };
 
-World.prototype.handleThrowableHit = function (bubble, enemy) {
     /**
      * Resolves one projectile hit against one enemy when they overlap.
      * It supports checkThrowableCollisions across all active enemies.
      */
+World.prototype.handleThrowableHit = function (bubble, enemy) {
     if (bubble.isRemoved || enemy.isRemoved || !bubble.isColliding(enemy)) {
         return;
     }
@@ -345,11 +345,11 @@ World.prototype.handleThrowableHit = function (bubble, enemy) {
     bubble.remove();
 };
 
-World.prototype.playBubbleImpactSound = function (bubbleType) {
     /**
      * Plays the projectile impact sound for normal or poison bubbles.
      * It is used by handleThrowableHit after damage was applied.
      */
+World.prototype.playBubbleImpactSound = function (bubbleType) {
     if (!window.gameAudio) {
         return;
     }
@@ -358,11 +358,11 @@ World.prototype.playBubbleImpactSound = function (bubbleType) {
     window.gameAudio.play(soundName, { cooldown: 80 });
 };
 
-World.prototype.addPoisonBubbleToInventory = function () {
     /**
      * Adds one poison bubble to the inventory and updates the status bar.
      * It is used by pickup collisions before poison shots are fired later.
      */
+World.prototype.addPoisonBubbleToInventory = function () {
     if (this.collectedPoisonBubbles >= this.maxPoisonBubbles) {
         return false;
     }
@@ -372,20 +372,20 @@ World.prototype.addPoisonBubbleToInventory = function () {
     return true;
 };
 
-World.prototype.removePoisonBubbleFromInventory = function (amount = 1) {
     /**
      * Removes poison bubbles from the inventory and refreshes the status bar.
      * It supports poison projectile firing after attack animations finish.
      */
+World.prototype.removePoisonBubbleFromInventory = function (amount = 1) {
     this.collectedPoisonBubbles = Math.max(0, this.collectedPoisonBubbles - amount);
     this.poisonStatusBar.setCollectedPoisonBubbles(this.collectedPoisonBubbles);
 };
 
-World.prototype.startBossFight = function () {
     /**
      * Finds the endboss, plays the roar, and starts the intro sequence.
      * It is triggered once from boss trigger collisions.
      */
+World.prototype.startBossFight = function () {
     const endboss = this.level.enemies.find((enemy) => enemy instanceof Endboss);
 
     if (!endboss) {
