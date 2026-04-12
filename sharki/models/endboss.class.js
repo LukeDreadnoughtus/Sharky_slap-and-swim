@@ -3,7 +3,7 @@ class Endboss extends MovableObject {
     height = 400;
     y = 70;
     speed = 0.35;
-    movementSpeed = 0.35;
+    movementSpeed = 1.50;
     verticalMovementSpeed = 2.3;
     verticalTrackingTolerance = 8;
     verticalTargetOffset = 10;
