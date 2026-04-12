@@ -9,10 +9,13 @@ class ThrowableObject extends MovableObject {
 
     width = 45;
     height = 45;
-    speedX = 9;
-    speedY = -7;
-    gravity = 0.45;
+    speedX = 5;
+    speedY = -3.2;
+    floatAcceleration = -0.02;
+    maxRiseSpeed = -4.4;
+    arcStrength = 1.1;
     direction = 1;
+    travelDistance = 0;
     isRemoved = false;
     alreadyHit = false;
     damage = 2;
@@ -24,8 +27,8 @@ class ThrowableObject extends MovableObject {
     hitboxHeight = 28;
 
     /**
-     * Creates a normal or poison bubble and initializes its starting movement state.
-     * It preloads both sprite options before animate starts the flight loop.
+     * Creates a normal or poison bubble and initializes its upward flight state.
+     * It preloads both sprite options before animate starts the swim arc.
      */
     constructor(x, y, direction = 1, bubbleType = 'normal') {
         super().loadImage(this.getBubbleImagePath(bubbleType));
@@ -65,8 +68,8 @@ class ThrowableObject extends MovableObject {
     }
 
     /**
-     * Updates one flight step and removes the bubble when its arc is finished.
-     * It is called by animate on every frame of the flight interval.
+     * Updates one upward swim step with a small forward arc.
+     * It is called by animate until the bubble reaches the screen edge.
      */
     updateFlightStep() {
         if (this.isRemoved) {
@@ -74,13 +77,34 @@ class ThrowableObject extends MovableObject {
             return;
         }
 
+        this.travelDistance += this.speedX;
         this.x += this.speedX * this.direction;
-        this.y += this.speedY;
-        this.speedY += this.gravity;
+        this.y += this.getVerticalFlightStep();
+        this.speedY = Math.max(
+            this.maxRiseSpeed,
+            this.speedY + this.floatAcceleration
+        );
 
-        if (this.y > this.startY + 100) {
+        if (this.hasReachedUpperEdge()) {
             this.remove();
         }
+    }
+
+    /**
+     * Returns the combined rise and arc offset for the current frame.
+     * It supports updateFlightStep with a gentle bow-shaped path.
+     */
+    getVerticalFlightStep() {
+        const arcOffset = Math.sin(this.travelDistance * 0.08) * this.arcStrength;
+        return this.speedY + arcOffset;
+    }
+
+    /**
+     * Checks whether the bubble already left the visible top area.
+     * It keeps updateFlightStep focused on flight movement.
+     */
+    hasReachedUpperEdge() {
+        return this.y + this.height < 0;
     }
 
     /**

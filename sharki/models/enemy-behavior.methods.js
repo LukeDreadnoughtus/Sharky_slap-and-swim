@@ -10,7 +10,7 @@ Shark.prototype.animate = function () {
         }
 
         this.renderEnemyState();
-    }, 50);
+    }, 120);
 };
 
 /**

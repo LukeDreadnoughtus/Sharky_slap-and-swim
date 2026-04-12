@@ -48,11 +48,13 @@ Character.prototype.handleHorizontalMovement = function () {
      * It is the horizontal branch used by updateCharacterMovement.
      */
     if (this.world.keyboard.RIGHT && this.x < this.world.level.character_max_x) {
+        this.registerAction();
         this.x = Math.min(this.x + this.speed, this.world.level.character_max_x);
         this.otherDirection = false;
     }
 
     if (this.world.keyboard.LEFT && this.x > 0) {
+        this.registerAction();
         this.x -= this.speed;
         this.otherDirection = true;
     }
@@ -114,13 +116,14 @@ Character.prototype.handlePoisonBubbleInput = function () {
 
 Character.prototype.updateCharacterAnimation = function () {
     /**
-     * Selects and plays the correct animation state for the current frame.
-     * It is the visual update branch used by animate.
+     * Selects the correct animation and enables long idle after inactivity.
+     * It extends the visual update branch used by animate.
      */
     if (!this.world || !this.world.keyboard) {
         return;
     }
 
+    this.checkLongIdle();
     if (this.isDead()) return this.playDeathAnimationOnce();
     if (this.isHurt()) return this.playAnimation(this.getCurrentHurtImages());
     if (this.isBubbleAttacking) return this.playBubbleAttackAnimation();
@@ -130,7 +133,7 @@ Character.prototype.updateCharacterAnimation = function () {
 
 Character.prototype.playMovementOrIdleAnimation = function () {
     /**
-     * Plays swimming frames while input is active, otherwise the idle loop.
+     * Plays swim, idle, or long idle frames for the current neutral state.
      * It complements updateCharacterAnimation after combat states are checked.
      */
     const moving = this.world.keyboard.RIGHT
@@ -138,7 +141,32 @@ Character.prototype.playMovementOrIdleAnimation = function () {
         || this.world.keyboard.UP
         || this.world.keyboard.DOWN;
 
-    this.playAnimation(moving ? this.IMAGES_SWIM : this.IMAGES_WALKING);
+    if (moving) {
+        this.playAnimation(this.IMAGES_SWIM);
+        return;
+    }
+
+    if (this.isLongIdle) {
+        this.playLongIdleAnimation();
+        return;
+    }
+
+    this.playAnimation(this.IMAGES_WALKING);
+};
+
+Character.prototype.playLongIdleAnimation = function () {
+    /**
+     * Plays long idle slower than other states with a local frame delay.
+     * It keeps animate on the shared interval while only this loop slows down.
+     */
+    this.longIdleFrameDelay += 2;
+
+    if (this.longIdleFrameDelay < this.longIdleDelayThreshold) {
+        return;
+    }
+
+    this.longIdleFrameDelay = 0;
+    this.playAnimation(this.IMAGES_LONG_IDLE);
 };
 
 Character.prototype.playSlapAnimationFrame = function () {

@@ -7,7 +7,7 @@ class Character extends MovableObject {
     maxY = 230;
     hitboxOffsetX = 120;
     hitboxOffsetY = 140;
-    hitboxWidth = 60;
+    hitboxWidth = 110;
     hitboxHeight = 50;
     bubbleSpawnOffsetXRight = 210;
     bubbleSpawnOffsetXLeft = 40;
@@ -41,6 +41,23 @@ class Character extends MovableObject {
         'sharki/img/1.Sharkie/3.Swim/4.png',
         'sharki/img/1.Sharkie/3.Swim/5.png',
         'sharki/img/1.Sharkie/3.Swim/6.png'
+    ];
+
+    IMAGES_LONG_IDLE = [
+        'sharki/img/1.Sharkie/2.Long_IDLE/i1.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I2.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I3.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I4.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I5.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I6.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I7.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I8.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I9.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I10.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I11.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I12.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I13.png',
+        'sharki/img/1.Sharkie/2.Long_IDLE/I14.png'
     ];
 
     IMAGES_SLAP = [
@@ -109,6 +126,11 @@ class Character extends MovableObject {
 
     IMAGES_POSION_BUBBLE_ATTACK = this.IMAGES_POISON_BUBBLE_ATTACK;
     world;
+    lastActionTime = Date.now();
+    longIdleStartedAt = 0;
+    isLongIdle = false;
+    longIdleFrameDelay = 0;
+    longIdleDelayThreshold = 3;
     isSlapping = false;
     slapImageIndex = 0;
     slapTargetsHit = new Set();
@@ -138,6 +160,7 @@ class Character extends MovableObject {
         [
             this.IMAGES_WALKING,
             this.IMAGES_SWIM,
+            this.IMAGES_LONG_IDLE,
             this.IMAGES_SLAP,
             this.IMAGES_DEAD,
             this.IMAGES_HURT,
@@ -160,6 +183,7 @@ class Character extends MovableObject {
      * It is used by the movement update inside animate.
      */
     swimUp() {
+        this.registerAction();
         this.y -= this.speed;
         this.clampVerticalPosition();
     }
@@ -169,8 +193,38 @@ class Character extends MovableObject {
      * It is used by the movement update inside animate.
      */
     swimDown() {
+        this.registerAction();
         this.y += this.speed;
         this.clampVerticalPosition();
+    }
+
+    /**
+     * Resets long idle tracking after movement or attacks change the state.
+     * It supports movement helpers and attack starters before animations switch.
+     */
+    registerAction() {
+        this.lastActionTime = Date.now();
+        this.longIdleStartedAt = 0;
+        this.isLongIdle = false;
+        this.longIdleFrameDelay = 0;
+    }
+
+    /**
+     * Enables the long idle state after seven seconds without player actions.
+     * It supports updateCharacterAnimation before idle frames get selected.
+     */
+    checkLongIdle() {
+        const inactiveTime = Date.now() - this.lastActionTime;
+
+        if (inactiveTime < 7000) {
+            return;
+        }
+
+        this.isLongIdle = true;
+
+        if (!this.longIdleStartedAt) {
+            this.longIdleStartedAt = Date.now();
+        }
     }
 
     /**
@@ -192,6 +246,7 @@ class Character extends MovableObject {
             return;
         }
 
+        this.registerAction();
         this.isSlapping = true;
         this.slapImageIndex = 0;
         this.slapTargetsHit.clear();
@@ -227,6 +282,7 @@ class Character extends MovableObject {
             return;
         }
 
+        this.registerAction();
         this.isBubbleAttacking = true;
         this.bubbleAttackType = type;
         this.bubbleAttackFrameIndex = 0;
@@ -264,7 +320,11 @@ class Character extends MovableObject {
             ? this.x + this.bubbleSpawnOffsetXLeft
             : this.x + this.bubbleSpawnOffsetXRight;
 
-        return { x, y: this.y + this.bubbleSpawnOffsetY, direction: this.otherDirection ? -1 : 1 };
+        return {
+            x,
+            y: this.y + this.bubbleSpawnOffsetY,
+            direction: this.otherDirection ? -1 : 1
+        };
     }
 
     /**
@@ -272,7 +332,9 @@ class Character extends MovableObject {
      * It supports getSlapHitbox and world slap collision checks.
      */
     isSlapAttackFrame() {
-        return this.isSlapping && this.slapImageIndex >= 3 && this.slapImageIndex <= 5;
+        return this.isSlapping
+            && this.slapImageIndex >= 3
+            && this.slapImageIndex <= 5;
     }
 
     /**
@@ -284,7 +346,9 @@ class Character extends MovableObject {
             return null;
         }
 
-        return this.otherDirection ? this.getLeftSlapHitbox() : this.getRightSlapHitbox();
+        return this.otherDirection
+            ? this.getLeftSlapHitbox()
+            : this.getRightSlapHitbox();
     }
 
     /**
