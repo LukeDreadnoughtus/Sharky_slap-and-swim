@@ -3,7 +3,7 @@ class Endboss extends MovableObject {
     height = 400;
     y = 70;
     speed = 0.35;
-    movementSpeed = 1.50;
+    movementSpeed = 1.5;
     verticalMovementSpeed = 2.3;
     verticalTrackingTolerance = 8;
     verticalTargetOffset = 10;
@@ -86,13 +86,37 @@ class Endboss extends MovableObject {
     deathAnimationStarted = false;
     moveWhileHurt = false;
 
+    /**
+     * Creates the boss with its images, timings, and movement defaults.
+     * It prepares the shared state that the intro and combat method files consume.
+     */
     constructor(config = {}) {
         super().loadImage(this.IMAGES_INTRODUCE[0]);
+        this.loadEndbossImages();
+        this.applyEndbossConfig(config);
+        this.x = this.targetX;
+        this.introStartX = this.targetX + this.introOffset;
+        this.collidable = false;
+        this.animate();
+    }
+
+    /**
+     * Loads all image sequences that the split intro and combat flows reuse.
+     * It keeps the constructor small before the prototype methods take over.
+     */
+    loadEndbossImages() {
         this.loadImages(this.IMAGES_INTRODUCE);
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_ATTACK);
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
+    }
+
+    /**
+     * Applies the optional boss config values used by later behavior methods.
+     * It centralizes setup so the prototype files can trust consistent state.
+     */
+    applyEndbossConfig(config) {
         this.energy = config.energy ?? 100;
         this.speed = config.speed ?? this.speed;
         this.movementSpeed = config.movementSpeed ?? config.speed ?? this.movementSpeed;
@@ -106,389 +130,17 @@ class Endboss extends MovableObject {
         this.introFrameDuration = config.introFrameDuration ?? 150;
         this.introWaitTime = config.introWaitTime ?? 3000;
         this.moveWhileHurt = config.moveWhileHurt ?? this.moveWhileHurt;
-        this.x = this.targetX;
-        this.introStartX = this.targetX + this.introOffset;
-        this.collidable = false;
-        this.animate();
     }
 
     /**
-     * - Aktualisiert Darstellung, Status oder Rendering im Spiel.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
+     * Draws the boss only while it is active and not removed from play.
+     * It stays minimal because the render flow already delegates to DrawableObject.
      */
-
     draw(ctx) {
         if (!this.isVisible || this.isRemoved) {
             return;
         }
 
         super.draw(ctx);
-    }
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit finishIntro zusammen.
-     * - Greift dabei auf world zu.
-     */
-
-    startIntro() {
-        if (this.introStarted) {
-            return;
-        }
-
-        this.isVisible = true;
-        this.introStarted = true;
-        this.introFinished = false;
-        this.isWaitingAfterIntro = false;
-        this.canMove = false;
-        this.collidable = false;
-        this.currentImage = 0;
-        this.introImageIndex = 0;
-        this.x = this.introStartX;
-        this.img = this.imageCache[this.IMAGES_INTRODUCE[0]];
-
-        const distance = this.introStartX - this.targetX;
-
-        this.introInterval = setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (this.introImageIndex < this.IMAGES_INTRODUCE.length) {
-                const path = this.IMAGES_INTRODUCE[this.introImageIndex];
-                this.img = this.imageCache[path];
-            }
-
-            const progress = Math.min(1, (this.introImageIndex + 1) / this.IMAGES_INTRODUCE.length);
-            this.x = this.introStartX - distance * progress;
-            this.introImageIndex++;
-
-            if (this.introImageIndex >= this.IMAGES_INTRODUCE.length) {
-                clearInterval(this.introInterval);
-                this.introInterval = null;
-                this.x = this.targetX;
-                this.finishIntro();
-            }
-        }, this.introFrameDuration);
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world zu.
-     */
-
-    finishIntro() {
-        this.introFinished = true;
-        this.isWaitingAfterIntro = true;
-        this.collidable = true;
-        this.currentImage = 0;
-        this.img = this.imageCache[this.IMAGES_WALKING[0]];
-
-        setTimeout(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (this.isDead() || this.isRemoved) {
-                return;
-            }
-
-            this.isWaitingAfterIntro = false;
-            this.canMove = true;
-        }, this.introWaitTime);
-    }
-
-    /**
-     * - Aktualisiert Darstellung, Status oder Rendering im Spiel.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit updateDirection zusammen.
-     */
-
-    updateBehavior(character) {
-        if (!character || !this.introFinished || this.isDead() || this.isRemoved) {
-            return;
-        }
-
-        this.updateDirection(character);
-
-        if (!this.canMove || this.isAttacking || (this.isHurtAnimating && !this.moveWhileHurt)) {
-            return;
-        }
-
-        const bossCenter = this.x + this.hitboxOffsetX + this.hitboxWidth / 2;
-        const characterCenter = character.x + character.hitboxOffsetX + character.hitboxWidth / 2;
-
-        if (characterCenter < bossCenter - 5) {
-            this.x -= this.movementSpeed;
-        } else if (characterCenter > bossCenter + 5) {
-            this.x += this.movementSpeed;
-        }
-
-        this.updateVerticalMovement(character);
-    }
-
-    /**
-     * - Aktualisiert Darstellung, Status oder Rendering im Spiel.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     */
-
-    updateDirection(character) {
-        const bossCenter = this.x + this.hitboxOffsetX + this.hitboxWidth / 2;
-        const characterCenter = character.x + character.hitboxOffsetX + character.hitboxWidth / 2;
-
-        this.otherDirection = characterCenter > bossCenter;
-    }
-
-    /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     */
-
-
-    /**
-     * - Lässt den Endboss dem Charakter vertikal folgen.
-     * - Arbeitet mit Hitbox-Zentren, damit große Sprite-Höhen das Tracking nicht verfälschen.
-     */
-
-    updateVerticalMovement(character) {
-        const bossCenterY = this.getBossTrackingCenterY();
-        const targetCenterY = this.getCharacterTrackingCenterY(character) + this.verticalTargetOffset;
-        const verticalDelta = targetCenterY - bossCenterY;
-
-        if (Math.abs(verticalDelta) <= this.verticalTrackingTolerance) {
-            return;
-        }
-
-        if (verticalDelta < 0) {
-            this.y -= this.verticalMovementSpeed;
-        } else {
-            this.y += this.verticalMovementSpeed;
-        }
-
-        this.clampVerticalPosition();
-    }
-
-    /**
-     * - Liefert den relevanten Y-Mittelpunkt des Endbosses für das Tracking.
-     */
-
-    getBossTrackingCenterY() {
-        return this.y + this.hitboxOffsetY + this.hitboxHeight / 2;
-    }
-
-    /**
-     * - Liefert den relevanten Y-Mittelpunkt des Charakters für das Tracking.
-     */
-
-    getCharacterTrackingCenterY(character) {
-        const hitboxOffsetY = character.hitboxOffsetY ?? 0;
-        const hitboxHeight = character.hitboxHeight ?? character.height ?? 0;
-        return character.y + hitboxOffsetY + hitboxHeight / 2;
-    }
-
-    /**
-     * - Begrenzt die vertikale Bewegung des Endbosses.
-     */
-
-    clampVerticalPosition() {
-        this.y = Math.max(this.minY, Math.min(this.maxY, this.y));
-    }
-
-    canStartAttack() {
-        return this.introFinished &&
-            !this.isWaitingAfterIntro &&
-            !this.isDead() &&
-            !this.isRemoved &&
-            !this.isAttacking &&
-            !this.isHurtAnimating &&
-            new Date().getTime() - this.lastAttackTime >= this.attackCooldown;
-    }
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit canStartAttack zusammen.
-     */
-
-    startAttack() {
-        if (!this.canStartAttack()) {
-            return false;
-        }
-
-        this.isAttacking = true;
-        this.attackAnimationStarted = false;
-        this.attackFrameIndex = 0;
-        this.canMove = false;
-        this.lastAttackTime = new Date().getTime();
-        return true;
-    }
-
-    /**
-     * - Spielt Medien ab oder lädt benötigte Ressourcen.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     */
-
-    playAttackAnimation() {
-        if (this.attackFrameIndex >= this.IMAGES_ATTACK.length) {
-            this.isAttacking = false;
-            this.attackAnimationStarted = false;
-            this.attackFrameIndex = 0;
-            this.currentImage = 0;
-
-            if (!this.isDead() && !this.isRemoved && !this.isWaitingAfterIntro) {
-                this.canMove = true;
-            }
-            return;
-        }
-
-        const path = this.IMAGES_ATTACK[this.attackFrameIndex];
-        this.img = this.imageCache[path];
-        this.attackFrameIndex++;
-    }
-
-    hit(damage = 5) {
-        if (this.isDead() || this.isRemoved) {
-            return;
-        }
-
-        super.hit(damage);
-
-        if (this.isDead()) {
-            return;
-        }
-
-        this.startHurtAnimation();
-    }
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     */
-
-    startHurtAnimation() {
-        if (this.isAttacking || this.isHurtAnimating || !this.introFinished) {
-            return;
-        }
-
-        this.isHurtAnimating = true;
-        this.hurtAnimationStarted = false;
-        this.hurtFrameIndex = 0;
-        this.canMove = this.moveWhileHurt;
-    }
-
-    /**
-     * - Spielt Medien ab oder lädt benötigte Ressourcen.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     */
-
-    playHurtAnimation() {
-        if (this.hurtFrameIndex >= this.IMAGES_HURT.length) {
-            this.isHurtAnimating = false;
-            this.hurtAnimationStarted = false;
-            this.hurtFrameIndex = 0;
-            this.currentImage = 0;
-
-            if (!this.isDead() && !this.isRemoved && !this.isWaitingAfterIntro) {
-                this.canMove = true;
-            }
-            return;
-        }
-
-        const path = this.IMAGES_HURT[this.hurtFrameIndex];
-        this.img = this.imageCache[path];
-        this.hurtFrameIndex++;
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit startDeathAnimation zusammen.
-     */
-
-    onDeath() {
-        this.disableHitbox();
-        this.canMove = false;
-        this.startDeathAnimation();
-    }
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world zu.
-     */
-
-    startDeathAnimation() {
-        if (this.deathAnimationStarted) {
-            return;
-        }
-
-        this.deathAnimationStarted = true;
-        this.isAttacking = false;
-        this.isHurtAnimating = false;
-        this.attackAnimationStarted = false;
-        this.hurtAnimationStarted = false;
-        this.attackFrameIndex = 0;
-        this.hurtFrameIndex = 0;
-        this.currentImage = 0;
-
-        let frameIndex = 0;
-        const deathInterval = setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (frameIndex >= this.IMAGES_DEAD.length) {
-                clearInterval(deathInterval);
-                setTimeout(() => {
-                    this.isRemoved = true;
-                }, 600);
-                return;
-            }
-
-            const path = this.IMAGES_DEAD[frameIndex];
-            this.img = this.imageCache[path];
-            frameIndex++;
-        }, 180);
-    }
-
-    /**
-     * - Steuert Animationsabläufe und wiederkehrende Bewegungen der Spielfigur oder Objekte.
-     * - Liegt im Modellbereich rund um endboss und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit playAttackAnimation, playHurtAnimation zusammen.
-     * - Greift dabei auf world zu.
-     */
-
-    animate() {
-        setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (!this.introFinished || this.isDead() || this.isRemoved) {
-                return;
-            }
-
-            if (this.isAttacking) {
-                if (!this.attackAnimationStarted) {
-                    this.attackAnimationStarted = true;
-                    this.attackFrameIndex = 0;
-                }
-                this.playAttackAnimation();
-                return;
-            }
-
-            if (this.isHurtAnimating) {
-                if (!this.hurtAnimationStarted) {
-                    this.hurtAnimationStarted = true;
-                    this.hurtFrameIndex = 0;
-                }
-                this.playHurtAnimation();
-                return;
-            }
-
-            this.playAnimation(this.IMAGES_WALKING);
-        }, 120);
     }
 }

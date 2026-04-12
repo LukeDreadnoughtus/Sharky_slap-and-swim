@@ -16,14 +16,22 @@ Character.prototype.updateCharacterMovement = function () {
         return;
     }
 
+    this.updateMovementPosition();
+    this.handleAttackInputs();
+    this.world.camera_x = -this.x + 100;
+};
+
+/**
+ * Applies the current horizontal and vertical movement for one update tick.
+ * It supports updateCharacterMovement before attack input handling runs.
+ */
+Character.prototype.updateMovementPosition = function () {
     if (!this.isBubbleAttacking) {
         this.handleHorizontalMovement();
         this.handleVerticalMovement();
     }
 
     this.clampVerticalPosition();
-    this.handleAttackInputs();
-    this.world.camera_x = -this.x + 100;
 };
 
 Character.prototype.hasMovementContext = function () {
@@ -69,14 +77,36 @@ Character.prototype.handleAttackInputs = function () {
      * Starts slap or projectile attacks from the current keyboard state.
      * It is called by updateCharacterMovement after position updates.
      */
+    this.handleSlapInput();
+    this.handleBubbleShotInput();
+    this.handlePoisonBubbleInput();
+};
+
+/**
+ * Starts the slap attack when the melee input is pressed and allowed.
+ * It keeps handleAttackInputs short and isolates melee-specific guards.
+ */
+Character.prototype.handleSlapInput = function () {
     if (this.world.keyboard.SPACE && !this.isSlapping && !this.isBubbleAttacking) {
         this.slap();
     }
+};
 
+/**
+ * Starts the regular bubble attack when the mapped key is pressed.
+ * It is one branch inside handleAttackInputs.
+ */
+Character.prototype.handleBubbleShotInput = function () {
     if (this.world.keyboard.S) {
         this.startBubbleAttack();
     }
+};
 
+/**
+ * Starts the poison bubble attack when the mapped key is pressed.
+ * It is the poison-specific branch inside handleAttackInputs.
+ */
+Character.prototype.handlePoisonBubbleInput = function () {
     if (this.world.keyboard.D) {
         this.startPoisonBubbleAttack();
     }
@@ -165,8 +195,17 @@ Character.prototype.finishBubbleAttack = function () {
         return;
     }
 
+    this.spawnBubbleAttackByType(attackType);
+};
+
+/**
+ * Spawns the correct projectile after finishBubbleAttack reset the local state.
+ * It keeps finishBubbleAttack within the configured function-length rule.
+ */
+Character.prototype.spawnBubbleAttackByType = function (attackType) {
     if (attackType === 'poison') {
-        return this.finishPoisonBubbleAttack();
+        this.finishPoisonBubbleAttack();
+        return;
     }
 
     this.world.spawnBubbleShot();
@@ -249,11 +288,20 @@ Character.prototype.hit = function (damage = 5, type = 'poison') {
 
     this.hurtAnimationType = type === 'electric' ? 'electric' : 'poison';
     MovableObject.prototype.hit.call(this, damage);
+    this.handleCriticalHitState();
+};
 
-    if (this.isDead() || this.energy <= 20) {
-        this.energy = 0;
-        this.triggerDeathState();
+/**
+ * Forces the final death state once the character is dead or critically low.
+ * It supports hit after shared damage application already changed the energy value.
+ */
+Character.prototype.handleCriticalHitState = function () {
+    if (!this.isDead() && this.energy > 20) {
+        return;
     }
+
+    this.energy = 0;
+    this.triggerDeathState();
 };
 
 Character.prototype.triggerDeathState = function () {

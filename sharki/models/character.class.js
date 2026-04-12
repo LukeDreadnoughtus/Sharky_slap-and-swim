@@ -1,17 +1,14 @@
-class Character extends MovableObject{
+class Character extends MovableObject {
     height = 250;
     width = 300;
-
     y = 190;
     speed = 10;
     minY = -70;
     maxY = 230;
-
     hitboxOffsetX = 120;
     hitboxOffsetY = 140;
     hitboxWidth = 60;
     hitboxHeight = 50;
-
     bubbleSpawnOffsetXRight = 210;
     bubbleSpawnOffsetXLeft = 40;
     bubbleSpawnOffsetY = 115;
@@ -57,7 +54,7 @@ class Character extends MovableObject{
         'sharki/img/1.Sharkie/4.Attack/Fin slap/8.png'
     ];
 
-    IMAGES_DEAD =[
+    IMAGES_DEAD = [
          'sharki/img/1.Sharkie/6.dead/1.Poisoned/1.png',
          'sharki/img/1.Sharkie/6.dead/1.Poisoned/2.png',
          'sharki/img/1.Sharkie/6.dead/1.Poisoned/3.png',
@@ -111,7 +108,6 @@ class Character extends MovableObject{
     ];
 
     IMAGES_POSION_BUBBLE_ATTACK = this.IMAGES_POISON_BUBBLE_ATTACK;
-
     world;
     isSlapping = false;
     slapImageIndex = 0;
@@ -125,171 +121,95 @@ class Character extends MovableObject{
     hurtAnimationType = 'poison';
 
     /**
-     * - Erzeugt die Instanz und startet die Grundinitialisierung der Klasse.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit animate zusammen.
+     * Creates the character and preloads all animation image groups.
+     * It cooperates with animate, attack helpers, and hurt/death playback.
      */
-
-    constructor(){
+    constructor() {
         super().loadImage('sharki/img/1.Sharkie/1.IDLE/1.png');
-        this.loadImages(this.IMAGES_WALKING);
-        this.loadImages(this.IMAGES_SWIM);
-        this.loadImages(this.IMAGES_SLAP);
-        this.loadImages(this.IMAGES_DEAD);
-        this.loadImages(this.IMAGES_HURT);
-        this.loadImages(this.IMAGES_ELECTRIC_HURT);
-        this.loadImages(this.IMAGES_BUBBLE_ATTACK);
-        this.loadImages(this.IMAGES_POISON_BUBBLE_ATTACK);
+        this.loadCharacterImages();
         this.animate();
     }
 
+    /**
+     * Preloads all image groups used by movement, attacks, and damage states.
+     * It keeps the constructor compact before animate starts its intervals.
+     */
+    loadCharacterImages() {
+        [
+            this.IMAGES_WALKING,
+            this.IMAGES_SWIM,
+            this.IMAGES_SLAP,
+            this.IMAGES_DEAD,
+            this.IMAGES_HURT,
+            this.IMAGES_ELECTRIC_HURT,
+            this.IMAGES_BUBBLE_ATTACK,
+            this.IMAGES_POISON_BUBBLE_ATTACK
+        ].forEach((images) => this.loadImages(images));
+    }
 
+    /**
+     * Clamps the vertical position to the configured movement bounds.
+     * It supports swimUp, swimDown, and the shared movement update.
+     */
     clampVerticalPosition() {
         this.y = Math.max(this.minY, Math.min(this.y, this.maxY));
     }
 
+    /**
+     * Moves the character upward and reapplies the vertical bounds.
+     * It is used by the movement update inside animate.
+     */
     swimUp() {
         this.y -= this.speed;
         this.clampVerticalPosition();
     }
 
+    /**
+     * Moves the character downward and reapplies the vertical bounds.
+     * It is used by the movement update inside animate.
+     */
     swimDown() {
         this.y += this.speed;
         this.clampVerticalPosition();
     }
 
     /**
-     * - Steuert Animationsabläufe und wiederkehrende Bewegungen der Spielfigur oder Objekte.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit getCurrentHurtImages, slap zusammen.
-     * - Greift dabei auf world, keyboard, level zu.
+     * Returns the correct hurt image group for the current damage type.
+     * It supports the render update inside the animation interval.
      */
-
-    animate(){
-        setInterval(() => {
-            if (!this.world || !this.world.keyboard || !this.world.level) {
-                return;
-            }
-
-            if (this.isDead()) {
-                return;
-            }
-
-            if (!this.isBubbleAttacking) {
-                if (this.world.keyboard.RIGHT && this.x < this.world.level.character_max_x) {
-                    this.x = Math.min(this.x + this.speed, this.world.level.character_max_x);
-                    this.otherDirection = false;
-                }
-
-                if (this.world.keyboard.LEFT && this.x > 0) {
-                    this.x -= this.speed;
-                    this.otherDirection = true;
-                }
-
-                if (this.world.keyboard.UP) {
-                    this.swimUp();
-                }
-
-                if (this.world.keyboard.DOWN) {
-                    this.swimDown();
-                }
-            }
-
-            this.clampVerticalPosition();
-
-            if (this.world.keyboard.SPACE && !this.isSlapping && !this.isBubbleAttacking) {
-                this.slap();
-            }
-
-            if (this.world.keyboard.S) {
-                this.startBubbleAttack();
-            }
-
-            if (this.world.keyboard.D) {
-                this.startPoisonBubbleAttack();
-            }
-
-            this.world.camera_x = -this.x + 100;
-        }, 1000 / 60);
-
-        setInterval(() => {
-            if (!this.world || !this.world.keyboard) {
-                return;
-            }
-
-            if (this.isDead()) {
-                this.playDeathAnimationOnce();
-            } else if (this.isHurt()) {
-                this.playAnimation(this.getCurrentHurtImages());
-            } else if (this.isBubbleAttacking) {
-                this.playBubbleAttackAnimation();
-            } else if (this.isSlapping) {
-                let path = this.IMAGES_SLAP[this.slapImageIndex];
-                this.img = this.imageCache[path];
-                this.slapImageIndex++;
-
-                if (this.slapImageIndex >= this.IMAGES_SLAP.length) {
-                    this.isSlapping = false;
-                    this.slapImageIndex = 0;
-                    this.currentImage = 0;
-                    this.slapTargetsHit.clear();
-                }
-            } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
-                this.playAnimation(this.IMAGES_SWIM);
-            } else {
-                this.playAnimation(this.IMAGES_WALKING);
-            }
-        }, 80);
-    }
-
-
-    /**
-     * - Liest Daten aus und gibt einen passenden Wert zurück.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     */
-
     getCurrentHurtImages() {
         return this.hurtAnimationType === 'electric'
             ? this.IMAGES_ELECTRIC_HURT
             : this.IMAGES_HURT;
     }
 
-
     /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf Audio zu.
+     * Starts the slap attack and resets hit tracking for this swing.
+     * It cooperates with World.checkSlapHit and slap animation playback.
      */
-
     slap() {
-        if (!this.isSlapping) {
-            this.isSlapping = true;
-            this.slapImageIndex = 0;
-            this.slapTargetsHit.clear();
-
-            if (window.gameAudio) {
-                window.gameAudio.play('slap_sound', { cooldown: 120 });
-            }
+        if (this.isSlapping) {
+            return;
         }
+
+        this.isSlapping = true;
+        this.slapImageIndex = 0;
+        this.slapTargetsHit.clear();
+        window.gameAudio?.play('slap_sound', { cooldown: 120 });
     }
 
     /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit startProjectileAttack zusammen.
+     * Starts the normal projectile attack flow.
+     * It delegates the shared setup to startProjectileAttack.
      */
-
     startBubbleAttack() {
         this.startProjectileAttack('normal');
     }
 
     /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit startProjectileAttack zusammen.
-     * - Greift dabei auf world zu.
+     * Starts the poison projectile flow when inventory is available.
+     * It complements startBubbleAttack for the poison pickup mechanic.
      */
-
     startPoisonBubbleAttack() {
         if (!this.world || this.world.collectedPoisonBubbles <= 0) {
             return;
@@ -299,13 +219,11 @@ class Character extends MovableObject{
     }
 
     /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world, Audio zu.
+     * Starts one projectile attack state when the character is allowed to act.
+     * It prepares the animation that later spawns the projectile in the world.
      */
-
     startProjectileAttack(type) {
-        if (!this.world || this.isBubbleAttacking || this.isSlapping || this.isDead()) {
+        if (!this.canStartProjectileAttack()) {
             return;
         }
 
@@ -313,17 +231,24 @@ class Character extends MovableObject{
         this.bubbleAttackType = type;
         this.bubbleAttackFrameIndex = 0;
         this.currentImage = 0;
-
-        if (window.gameAudio) {
-            window.gameAudio.play('bubble_sound', { cooldown: 120 });
-        }
+        window.gameAudio?.play('bubble_sound', { cooldown: 120 });
     }
 
     /**
-     * - Liest Daten aus und gibt einen passenden Wert zurück.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
+     * Checks whether a projectile attack may currently begin.
+     * It supports startProjectileAttack by keeping the guard reusable.
      */
+    canStartProjectileAttack() {
+        return Boolean(this.world)
+            && !this.isBubbleAttacking
+            && !this.isSlapping
+            && !this.isDead();
+    }
 
+    /**
+     * Returns the correct projectile attack image group.
+     * It supports bubble attack animation playback.
+     */
     getCurrentBubbleAttackImages() {
         return this.bubbleAttackType === 'poison'
             ? this.IMAGES_POISON_BUBBLE_ATTACK
@@ -331,179 +256,55 @@ class Character extends MovableObject{
     }
 
     /**
-     * - Spielt Medien ab oder lädt benötigte Ressourcen.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit getCurrentBubbleAttackImages, finishBubbleAttack zusammen.
+     * Returns the projectile spawn position and direction from the current pose.
+     * It is used by the world once the attack animation finishes.
      */
-
-    playBubbleAttackAnimation() {
-        const images = this.getCurrentBubbleAttackImages();
-
-        if (this.bubbleAttackFrameIndex >= images.length) {
-            this.finishBubbleAttack();
-            return;
-        }
-
-        let path = images[this.bubbleAttackFrameIndex];
-        this.img = this.imageCache[path];
-        this.bubbleAttackFrameIndex++;
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world zu.
-     */
-
-    finishBubbleAttack() {
-        const attackType = this.bubbleAttackType;
-
-        this.isBubbleAttacking = false;
-        this.bubbleAttackFrameIndex = 0;
-        this.bubbleAttackType = null;
-        this.currentImage = 0;
-
-        if (!this.world) {
-            return;
-        }
-
-        if (attackType === 'poison') {
-            if (this.world.collectedPoisonBubbles > 0) {
-                this.world.removePoisonBubbleFromInventory(1);
-                this.world.spawnPoisonBubbleShot();
-            }
-            return;
-        }
-
-        this.world.spawnBubbleShot();
-    }
-
-    /**
-     * - Spielt Medien ab oder lädt benötigte Ressourcen.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     */
-
-    playDeathAnimationOnce() {
-        if (!this.deathAnimationStarted) {
-            this.deathAnimationStarted = true;
-            this.deathAnimationFinished = false;
-            this.deathImageIndex = 0;
-            this.currentImage = 0;
-        }
-
-        if (this.deathImageIndex >= this.IMAGES_DEAD.length) {
-            const lastImage = this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1];
-            this.img = this.imageCache[lastImage];
-            this.deathAnimationFinished = true;
-            return;
-        }
-
-        const path = this.IMAGES_DEAD[this.deathImageIndex];
-        this.img = this.imageCache[path];
-        this.deathImageIndex++;
-
-        if (this.deathImageIndex >= this.IMAGES_DEAD.length) {
-            this.deathAnimationFinished = true;
-        }
-    }
-
-    hit(damage = 5, type = 'poison') {
-        if (this.isDead()) {
-            return;
-        }
-
-        this.hurtAnimationType = type === 'electric' ? 'electric' : 'poison';
-        super.hit(damage);
-
-        if (this.isDead()) {
-            this.triggerDeathState();
-            return;
-        }
-
-        if (this.energy <= 20) {
-            this.energy = 0;
-            this.triggerDeathState();
-        }
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     */
-
-    triggerDeathState() {
-        this.lastHit = 0;
-        this.isSlapping = false;
-        this.isBubbleAttacking = false;
-        this.slapImageIndex = 0;
-        this.bubbleAttackFrameIndex = 0;
-        this.bubbleAttackType = null;
-        this.currentImage = 0;
-        this.deathAnimationStarted = false;
-        this.deathAnimationFinished = false;
-        this.deathImageIndex = 0;
-
-        if (typeof this.onDeath === 'function') {
-            this.onDeath();
-        }
-    }
-
-    /**
-     * - Liest Daten aus und gibt einen passenden Wert zurück.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     */
-
     getBubbleSpawnPosition() {
-        const spawnX = this.otherDirection
+        const x = this.otherDirection
             ? this.x + this.bubbleSpawnOffsetXLeft
             : this.x + this.bubbleSpawnOffsetXRight;
 
-        return {
-            x: spawnX,
-            y: this.y + this.bubbleSpawnOffsetY,
-            direction: this.otherDirection ? -1 : 1
-        };
+        return { x, y: this.y + this.bubbleSpawnOffsetY, direction: this.otherDirection ? -1 : 1 };
     }
 
     /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
+     * Checks whether the current slap frame should deal melee damage.
+     * It supports getSlapHitbox and world slap collision checks.
      */
-
     isSlapAttackFrame() {
         return this.isSlapping && this.slapImageIndex >= 3 && this.slapImageIndex <= 5;
     }
 
     /**
-     * - Liest Daten aus und gibt einen passenden Wert zurück.
-     * - Liegt im Modellbereich rund um character und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit isSlapAttackFrame zusammen.
+     * Returns the active slap hitbox for the current animation frame.
+     * It cooperates with isSlapAttackFrame and World.checkSlapHit.
      */
-
     getSlapHitbox() {
         if (!this.isSlapAttackFrame()) {
             return null;
         }
 
+        return this.otherDirection ? this.getLeftSlapHitbox() : this.getRightSlapHitbox();
+    }
+
+    /**
+     * Returns the slap hitbox for attacks facing left.
+     * It is used by getSlapHitbox when otherDirection is active.
+     */
+    getLeftSlapHitbox() {
         const lineLength = 80;
-        const lineY = this.y + this.height * 0.65;
-        const lineHeight = 20;
+        const y = this.y + this.height * 0.65 - 10;
+        const endX = this.x + 120;
+        return { x: endX - lineLength, y, width: lineLength, height: 20 };
+    }
 
-        if (this.otherDirection) {
-            const endX = this.x + 120;
-            return {
-                x: endX - lineLength,
-                y: lineY - lineHeight / 2,
-                width: lineLength,
-                height: lineHeight
-            };
-        }
-
-        return {
-            x: this.x + this.width - 120,
-            y: lineY - lineHeight / 2,
-            width: lineLength,
-            height: lineHeight
-        };
+    /**
+     * Returns the slap hitbox for attacks facing right.
+     * It is used by getSlapHitbox in the default facing direction.
+     */
+    getRightSlapHitbox() {
+        const lineLength = 80;
+        const y = this.y + this.height * 0.65 - 10;
+        return { x: this.x + this.width - 120, y, width: lineLength, height: 20 };
     }
 }

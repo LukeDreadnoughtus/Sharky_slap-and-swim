@@ -1,79 +1,94 @@
 class MovableObject extends DrawableObject {
     speed = 0.15;
-
     otherDirection = false;
     speedY = 0;
     acceleration = 2.5;
-
     hitboxOffsetX = 0;
     hitboxOffsetY = 0;
     hitboxWidth = this.width;
     hitboxHeight = this.height;
     collidable = true;
-
     energy = 100;
     lastHit = 0;
 
     /**
-     * - Setzt Werte oder wendet Einstellungen direkt auf Objekte an.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit isAboveGround zusammen.
-     * - Greift dabei auf world zu.
+     * Starts gravity updates and only applies them while the world is running.
+     * It delegates the movement check so the timer callback stays small.
      */
-
-    applyGravity(){
+    applyGravity() {
         setInterval(() => {
             if (this.world && !this.world.isRunning()) {
                 return;
             }
 
-            if (this.isAboveGround() || this.speedY > 0 ) {
-                this.y -= this.speedY;
-                this.speedY -= this.acceleration;
-            }
+            this.applyGravityStep();
         }, 1000 / 25);
     }
 
     /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Applies one gravity step when the object is still airborne or moving upward.
+     * It is called by applyGravity on every gravity tick.
      */
+    applyGravityStep() {
+        if (!this.isAboveGround() && this.speedY <= 0) {
+            return;
+        }
 
-    isAboveGround(){
+        this.y -= this.speedY;
+        this.speedY -= this.acceleration;
+    }
+
+    /**
+     * Reports whether the object is still above the default water floor threshold.
+     * It is used by applyGravityStep before vertical motion is updated.
+     */
+    isAboveGround() {
         return this.y < 150;
     }
 
     /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Checks hitbox overlap between this object and another movable object.
+     * It first validates collision flags before comparing the four hitbox edges.
      */
-
-    isColliding(mo){
+    isColliding(mo) {
         if (!this.collidable || !mo.collidable) {
             return false;
         }
 
-        return this.x + this.hitboxOffsetX + this.hitboxWidth > mo.x + mo.hitboxOffsetX &&
-               this.y + this.hitboxOffsetY + this.hitboxHeight > mo.y + mo.hitboxOffsetY &&
-               this.x + this.hitboxOffsetX < mo.x + mo.hitboxOffsetX + mo.hitboxWidth &&
-               this.y + this.hitboxOffsetY < mo.y + mo.hitboxOffsetY + mo.hitboxHeight;
+        return this.hasHorizontalCollision(mo) && this.hasVerticalCollision(mo);
     }
 
-    hit(damage = 5){
+    /**
+     * Checks whether the horizontal hitbox ranges of two objects overlap.
+     * It supports isColliding so the main collision method stays short.
+     */
+    hasHorizontalCollision(mo) {
+        return this.x + this.hitboxOffsetX + this.hitboxWidth > mo.x + mo.hitboxOffsetX
+            && this.x + this.hitboxOffsetX < mo.x + mo.hitboxOffsetX + mo.hitboxWidth;
+    }
+
+    /**
+     * Checks whether the vertical hitbox ranges of two objects overlap.
+     * It supports isColliding and mirrors the horizontal edge checks.
+     */
+    hasVerticalCollision(mo) {
+        return this.y + this.hitboxOffsetY + this.hitboxHeight > mo.y + mo.hitboxOffsetY
+            && this.y + this.hitboxOffsetY < mo.y + mo.hitboxOffsetY + mo.hitboxHeight;
+    }
+
+    /**
+     * Applies incoming damage, clamps energy, and triggers onDeath when needed.
+     * It is reused by character, enemies, and boss classes before their own reactions run.
+     */
+    hit(damage = 5) {
         if (this.isDead()) {
             return;
         }
 
-        this.energy -= damage;
-
-        if (this.energy < 0) {
-            this.energy = 0;
-        }
+        this.energy = Math.max(0, this.energy - damage);
 
         if (this.energy === 0) {
-            if (typeof this.onDeath === 'function') {
-                this.onDeath();
-            }
+            this.handleDeathHit();
             return;
         }
 
@@ -81,40 +96,46 @@ class MovableObject extends DrawableObject {
     }
 
     /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Calls the optional death callback after hit reduced energy to zero.
+     * It keeps hit short while preserving the existing shared death hook.
      */
+    handleDeathHit() {
+        if (typeof this.onDeath === 'function') {
+            this.onDeath();
+        }
+    }
 
-    isHurt(){
+    /**
+     * Reports whether the object was hit within the recent hurt cooldown window.
+     * It is typically used by animation code to pick a temporary hurt state.
+     */
+    isHurt() {
         let timepassed = new Date().getTime() - this.lastHit;
         timepassed = timepassed / 1000;
         return timepassed < 0.5;
     }
 
     /**
-     * - Prüft einen Zustand oder liefert eine boolesche Aussage.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Reports whether the object has no energy left and counts as dead.
+     * It is shared by damage, movement, and animation decisions across the project.
      */
-
-    isDead(){
+    isDead() {
         return this.energy == 0;
     }
 
     /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Disables collisions for objects that should no longer participate in combat.
+     * It is typically called from onDeath handlers before removal happens.
      */
-
     disableHitbox() {
         this.collidable = false;
     }
 
     /**
-     * - Spielt Medien ab oder lädt benötigte Ressourcen.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Advances to the next cached image in the provided animation sequence.
+     * It is the common animation helper used by character, enemies, and boss classes.
      */
-
-    playAnimation(images){
+    playAnimation(images) {
         let i = this.currentImage % images.length;
         let path = images[i];
         this.img = this.imageCache[path];
@@ -122,31 +143,36 @@ class MovableObject extends DrawableObject {
     }
 
     /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
+     * Keeps the placeholder right-move hook available for future behavior changes.
+     * It stays minimal because current gameplay only uses leftward enemy movement.
      */
-
-    moveRight(){
+    moveRight() {
         console.log('Moving right');
     }
 
     /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um movable objects und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit isDead zusammen.
-     * - Greift dabei auf world zu.
+     * Starts the recurring left-movement loop for horizontally moving objects.
+     * It delegates the single step to moveLeftStep so the interval body stays short.
      */
-
-    moveLeft(){
+    moveLeft() {
         setInterval(() => {
             if (this.world && !this.world.isRunning()) {
                 return;
             }
 
-            if (this.isDead() || this.isRemoved) {
-                return;
-            }
-            this.x -= this.speed;
+            this.moveLeftStep();
         }, 1000 / 60);
+    }
+
+    /**
+     * Applies one leftward movement step while the object is still active.
+     * It is used by moveLeft and respects death and removal state.
+     */
+    moveLeftStep() {
+        if (this.isDead() || this.isRemoved) {
+            return;
+        }
+
+        this.x -= this.speed;
     }
 }

@@ -129,7 +129,6 @@ class Shark extends MovableObject{
 
     height = 150;
     width = 100;
-
     hitboxOffsetX = 10;
     hitboxOffsetY = 10;
     hitboxWidth = 80;
@@ -145,168 +144,80 @@ class Shark extends MovableObject{
     minY = null;
     maxY = null;
 
-    constructor(config = {}){
+    /**
+     * Creates an enemy from the selected variant and movement config.
+     * It prepares the shared state that the split enemy behavior file consumes.
+     */
+    constructor(config = {}) {
         const variantName = config.variant ?? 'default';
         const variant = Shark.VARIANTS[variantName] ?? Shark.VARIANTS.default;
 
         super().loadImage(variant.swimImage);
+        this.applyVariantConfig(config, variantName, variant);
+        this.loadImages(this.IMAGES_WALKING);
+        this.loadImages(this.IMAGES_DEAD);
+        this.animate();
+    }
 
+    /**
+     * Applies the selected variant values and caller overrides to this enemy.
+     * It keeps the constructor short before the behavior methods run the logic.
+     */
+    applyVariantConfig(config, variantName, variant) {
+        this.applyVariantIdentity(variantName, variant);
+        this.applyVariantStats(config, variant);
+        this.applyVariantGeometry(config);
+        this.speed = config.speed ?? 0.15 + Math.random() * 0.5;
+        this.movementPattern = config.movementPattern ?? this.movementPattern;
+        this.baseY = this.y;
+        this.applyVerticalConfig(config);
+    }
+
+    /**
+     * Applies the selected variant name and image lists to this enemy instance.
+     * It supports applyVariantConfig before stats and geometry are assigned.
+     */
+    applyVariantIdentity(variantName, variant) {
         this.variant = variantName;
         this.IMAGES_WALKING = variant.walkingImages;
         this.IMAGES_DEAD = variant.deadImages;
+    }
+
+    /**
+     * Applies health, damage, and spawn position values for one enemy instance.
+     * It supports applyVariantConfig before movement and vertical rules are set.
+     */
+    applyVariantStats(config, variant) {
         this.damage = config.damage ?? variant.damage;
         this.energy = config.energy ?? variant.energy;
         this.x = config.x ?? 450 + Math.random() * 500;
         this.y = config.y ?? this.y;
+    }
+
+    /**
+     * Applies size and hitbox values that shape one enemy instance.
+     * It supports applyVariantConfig so geometry setup is grouped in one helper.
+     */
+    applyVariantGeometry(config) {
         this.width = config.width ?? this.width;
         this.height = config.height ?? this.height;
         this.hitboxOffsetX = config.hitboxOffsetX ?? this.hitboxOffsetX;
         this.hitboxOffsetY = config.hitboxOffsetY ?? this.hitboxOffsetY;
         this.hitboxWidth = config.hitboxWidth ?? this.hitboxWidth;
         this.hitboxHeight = config.hitboxHeight ?? this.hitboxHeight;
-        this.speed = config.speed ?? 0.15 + Math.random() * 0.5;
-        this.movementPattern = config.movementPattern ?? this.movementPattern;
-        this.baseY = this.y;
+    }
 
-        if (this.variant.startsWith('jelly_')) {
-            this.minY = config.minY ?? Shark.JELLYFISH_VERTICAL_LIMITS.minY;
-            this.maxY = config.maxY ?? Shark.JELLYFISH_VERTICAL_LIMITS.maxY;
-            this.verticalRange = config.verticalRange ?? Shark.JELLYFISH_VERTICAL_LIMITS.verticalRange;
-        } else {
-            this.minY = config.minY ?? this.minY;
-            this.maxY = config.maxY ?? this.maxY;
-            this.verticalRange = config.verticalRange ?? this.verticalRange;
-        }
+    /**
+     * Applies vertical movement settings for jellyfish and other enemy variants.
+     * It is extracted so applyVariantConfig stays within the size rule.
+     */
+    applyVerticalConfig(config) {
+        const useJellyDefaults = this.variant.startsWith('jelly_');
+        const limits = Shark.JELLYFISH_VERTICAL_LIMITS;
 
+        this.minY = config.minY ?? (useJellyDefaults ? limits.minY : this.minY);
+        this.maxY = config.maxY ?? (useJellyDefaults ? limits.maxY : this.maxY);
+        this.verticalRange = config.verticalRange ?? (useJellyDefaults ? limits.verticalRange : this.verticalRange);
         this.verticalSpeed = config.verticalSpeed ?? this.verticalSpeed;
-
-        this.loadImages(this.IMAGES_WALKING);
-        this.loadImages(this.IMAGES_DEAD);
-
-        this.animate();
-    }
-
-    /**
-     * - Steuert Animationsabläufe und wiederkehrende Bewegungen der Spielfigur oder Objekte.
-     * - Liegt im Modellbereich rund um enemy und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit startMovement, startDeathAnimation zusammen.
-     * - Greift dabei auf world zu.
-     */
-
-    animate(){
-        this.startMovement();
-
-        setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (this.isRemoved) {
-                return;
-            }
-
-            if (this.isDead()) {
-                if (!this.deathAnimationStarted) {
-                    this.startDeathAnimation();
-                }
-                return;
-            }
-
-            this.playAnimation(this.IMAGES_WALKING);
-        }, 50);
-    }
-
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um enemy und arbeitet nah an den Spielobjekten.
-     * - Hängt direkt mit moveVertically zusammen.
-     */
-
-    startMovement() {
-        if (this.movementPattern === 'vertical') {
-            this.moveVertically();
-            return;
-        }
-
-        this.moveLeft();
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um enemy und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world zu.
-     */
-
-    moveVertically() {
-        setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (this.isDead() || this.isRemoved) {
-                return;
-            }
-
-            this.y += this.verticalSpeed * this.verticalDirection;
-
-            const upperLimit = this.minY ?? (this.baseY - this.verticalRange);
-            const lowerLimit = this.maxY ?? (this.baseY + this.verticalRange);
-
-            if (this.y >= lowerLimit) {
-                this.y = lowerLimit;
-                this.verticalDirection = -1;
-            } else if (this.y <= upperLimit) {
-                this.y = upperLimit;
-                this.verticalDirection = 1;
-            }
-        }, 1000 / 60);
-    }
-
-    /**
-     * - Übernimmt einen abgegrenzten Teil der Spiellogik in dieser Datei.
-     * - Liegt im Modellbereich rund um enemy und arbeitet nah an den Spielobjekten.
-     */
-
-    onDeath() {
-        this.disableHitbox();
-    }
-
-    /**
-     * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
-     * - Liegt im Modellbereich rund um enemy und arbeitet nah an den Spielobjekten.
-     * - Greift dabei auf world zu.
-     */
-
-    startDeathAnimation() {
-        this.deathAnimationStarted = true;
-        this.currentImage = 0;
-
-        let frameIndex = 0;
-        const deathInterval = setInterval(() => {
-            if (this.world && !this.world.isRunning()) {
-                return;
-            }
-
-            if (frameIndex >= this.IMAGES_DEAD.length) {
-                clearInterval(deathInterval);
-                return;
-            }
-
-            const path = this.IMAGES_DEAD[frameIndex];
-            this.img = this.imageCache[path];
-
-            if (frameIndex === 0) {
-                this.y -= 20;
-            } else {
-                this.y += 10;
-            }
-
-            frameIndex++;
-        }, 200);
-
-        setTimeout(() => {
-            this.isRemoved = true;
-        }, 4000);
     }
 }

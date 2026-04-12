@@ -51,36 +51,28 @@ const LEVEL_3_ENEMIES = [
 ];
 
 /**
- * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
- * - Gehört zur Levellogik für level3 und setzt Spielfeld-Inhalte zusammen.
- * - Greift dabei auf level zu.
+ * Creates the third level with the strongest boss and densest enemy spread.
+ * It uses buildLevel so only level-three balancing values stay in this file.
  */
-
 function createLevel3() {
-    const level = new Level([
-        ...createEnemies(LEVEL_3_ENEMIES, ENEMY_MIN_DISTANCE, ENEMY_START_X, ENEMY_END_X),
-        new Endboss({
-            energy: 200,
-            x: 819 * 11 + 120,
-            speed: 0.5,
-            movementSpeed: 5.0,
-            verticalMovementSpeed: 3.3,
-            introFrameDuration: 100,
-            introWaitTime: 1800,
-            moveWhileHurt: true
-        })
-    ],
-    createBackgroundObjects('L'),
-    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
-    [
-        new BossTrigger(BOSS_TRIGGER_X, 110, 300)
-    ],
-    createPoisonBubbles(11, 220, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 330)
-    );
+    return buildLevel(LEVEL_3_ENEMIES, getLevel3BossConfig(), 'L', 11);
+}
 
-    level.level_end_x = 819 * 12;
-    level.character_max_x = 819 * 11;
-    return level;
+/**
+ * Returns the boss settings used by the third level factory.
+ * It keeps createLevel3 within the size rule and groups boss tuning in one place.
+ */
+function getLevel3BossConfig() {
+    return {
+        energy: 200,
+        x: 819 * 11 + 120,
+        speed: 0.5,
+        movementSpeed: 5.0,
+        verticalMovementSpeed: 3.3,
+        introFrameDuration: 100,
+        introWaitTime: 1800,
+        moveWhileHurt: true
+    };
 }
 
 const level3 = createLevel3();

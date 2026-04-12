@@ -30,35 +30,27 @@ const LEVEL_2_ENEMIES = [
 ];
 
 /**
- * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
- * - Gehört zur Levellogik für level2 und setzt Spielfeld-Inhalte zusammen.
- * - Greift dabei auf level zu.
+ * Creates the second level with a faster boss and updated enemy mix.
+ * It uses buildLevel so the file only contains data that is unique to level two.
  */
-
 function createLevel2() {
-    const level = new Level([
-        ...createEnemies(LEVEL_2_ENEMIES, ENEMY_MIN_DISTANCE, ENEMY_START_X, ENEMY_END_X),
-        new Endboss({
-            energy: 150,
-            x: 819 * 11 + 120,
-            speed: 0.5,
-            movementSpeed: 3.5,
-            introFrameDuration: 100,
-            introWaitTime: 1800,
-            moveWhileHurt: true
-        })
-    ],
-    createBackgroundObjects('L'),
-    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
-    [
-        new BossTrigger(BOSS_TRIGGER_X, 110, 300)
-    ],
-    createPoisonBubbles(9, 220, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 330)
-    );
+    return buildLevel(LEVEL_2_ENEMIES, getLevel2BossConfig(), 'L', 9);
+}
 
-    level.level_end_x = 819 * 12;
-    level.character_max_x = 819 * 11;
-    return level;
+/**
+ * Returns the boss settings used by the second level factory.
+ * It separates tuning values from createLevel2 and mirrors the other level files.
+ */
+function getLevel2BossConfig() {
+    return {
+        energy: 150,
+        x: 819 * 11 + 120,
+        speed: 0.5,
+        movementSpeed: 3.5,
+        introFrameDuration: 100,
+        introWaitTime: 1800,
+        moveWhileHurt: true
+    };
 }
 
 const level2 = createLevel2();

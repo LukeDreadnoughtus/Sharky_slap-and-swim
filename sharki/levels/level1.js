@@ -27,27 +27,19 @@ const LEVEL_1_ENEMIES = [
 ];
 
 /**
- * - Initialisiert Abläufe oder bereitet benötigte Daten vor.
- * - Gehört zur Levellogik für level1 und setzt Spielfeld-Inhalte zusammen.
- * - Greift dabei auf level zu.
+ * Creates the first level with its standard boss and collectible setup.
+ * It delegates common assembly to buildLevel so only level-specific data stays here.
  */
-
 function createLevel1() {
-    const level = new Level([
-        ...createEnemies(LEVEL_1_ENEMIES, ENEMY_MIN_DISTANCE, ENEMY_START_X, ENEMY_END_X),
-        new Endboss({ energy: 100, x: 819 * 11 + 120 })
-    ],
-    createBackgroundObjects('D'),
-    createCoins(25, 260, COIN_START_X, COIN_END_X, 340),
-    [
-        new BossTrigger(BOSS_TRIGGER_X, 110, 300)
-    ],
-    createPoisonBubbles(7, 220, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 330)
-    );
+    return buildLevel(LEVEL_1_ENEMIES, getLevel1BossConfig(), 'D', 7);
+}
 
-    level.level_end_x = 819 * 12;
-    level.character_max_x = 819 * 11;
-    return level;
+/**
+ * Returns the boss settings used by the first level factory.
+ * It keeps createLevel1 short and mirrors the later level config helpers.
+ */
+function getLevel1BossConfig() {
+    return { energy: 100, x: 819 * 11 + 120 };
 }
 
 const level1 = createLevel1();
