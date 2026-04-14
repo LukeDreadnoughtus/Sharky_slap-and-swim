@@ -114,6 +114,29 @@ Character.prototype.handlePoisonBubbleInput = function () {
     }
 };
 
+
+/**
+ * Returns the slap travel offset in world space for the active melee animation.
+ * It is shared by render helpers and slap hitbox placement.
+ */
+Character.prototype.getSlapTravelOffsetX = function () {
+    if (!this.isSlapping) {
+        return 0;
+    }
+
+    return this.otherDirection ? -this.slapTravelDistance : this.slapTravelDistance;
+};
+
+/**
+ * Returns the render X position with slap travel applied to visuals only.
+ * It supports DrawableObject.draw while body collisions stay on this.x.
+ */
+Character.prototype.getRenderX = function () {
+    const offsetX = this.getSlapTravelOffsetX();
+    const canvasOffsetX = this.otherDirection ? -offsetX : offsetX;
+    return this.x + canvasOffsetX;
+};
+
 Character.prototype.updateCharacterAnimation = function () {
     /**
      * Selects the correct animation and enables long idle after inactivity.

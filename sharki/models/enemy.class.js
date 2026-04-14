@@ -143,6 +143,8 @@ class Shark extends MovableObject{
     verticalSpeed = 0.8;
     minY = null;
     maxY = null;
+    hiddenWhileHit = false;
+    hitFeedbackTimeouts = [];
 
     /**
      * Creates an enemy from the selected variant and movement config.
@@ -220,4 +222,52 @@ class Shark extends MovableObject{
         this.verticalRange = config.verticalRange ?? (useJellyDefaults ? limits.verticalRange : this.verticalRange);
         this.verticalSpeed = config.verticalSpeed ?? this.verticalSpeed;
     }
+
+    /**
+     * Starts a triple blink and movement freeze after a non-lethal hit.
+     * It supports World.applyEnemyDamage with visible enemy feedback.
+     */
+    startHitFeedback(cycles = 3, phase = 70) {
+        this.setTemporaryMovementBlock(cycles * phase * 2);
+        this.clearHitFeedbackTimers();
+        this.runHitFeedbackBlink(cycles * 2, phase);
+    }
+
+    /**
+     * Toggles visibility through all blink phases and ends in a stable state.
+     * It complements startHitFeedback for repeated enemy flash feedback.
+     */
+    runHitFeedbackBlink(stepsLeft, phase) {
+        if (stepsLeft <= 0) {
+            this.finishHitFeedback();
+            return;
+        }
+
+        this.hiddenWhileHit = !this.hiddenWhileHit;
+        const timer = setTimeout(() => {
+            this.runHitFeedbackBlink(stepsLeft - 1, phase);
+        }, phase);
+        this.hitFeedbackTimeouts.push(timer);
+    }
+
+    /**
+     * Ends the temporary blink state after all feedback phases were played.
+     * It complements runHitFeedbackBlink before normal rendering continues.
+     */
+    finishHitFeedback() {
+        this.clearHitFeedbackTimers();
+        this.hiddenWhileHit = false;
+    }
+
+    /**
+     * Clears all pending blink timers before a new hit feedback starts.
+     * It supports startHitFeedback when enemies are hit again quickly.
+     */
+    clearHitFeedbackTimers() {
+        this.hitFeedbackTimeouts.forEach((timer) => clearTimeout(timer));
+        this.hitFeedbackTimeouts = [];
+        this.hiddenWhileHit = false;
+    }
+
 }
+

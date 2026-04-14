@@ -9,6 +9,7 @@ class World {
     statusBar = new StatusBar();
     coinStatusBar = new CoinStatusBar();
     poisonStatusBar = new PoisonStatusBar();
+    endbossStatusBar = new EndbossStatusBar();
     throwableObjects = [];
     collectedCoins = 0;
     collectedPoisonBubbles = 0;
@@ -21,6 +22,7 @@ class World {
     onCharacterDeath = null;
     onEndbossDeath = null;
     renderScale = 1;
+    endboss = null;
 
     /**
      * Creates one world instance and starts rendering and collision loops.
@@ -33,6 +35,7 @@ class World {
         this.level = levelFactory();
         this.onCharacterDeath = callbacks.onCharacterDeath ?? null;
         this.onEndbossDeath = callbacks.onEndbossDeath ?? null;
+        this.endboss = this.findEndboss();
         this.draw();
         this.setWorld();
         this.CheckCollisions();
@@ -57,10 +60,19 @@ class World {
         return [
             ...this.level.enemies,
             ...this.level.coins,
+            ...this.level.hearts,
             ...this.level.poisonBubbles,
             ...this.level.backgroundObjects,
             ...this.level.bossTriggers
         ];
+    }
+
+    /**
+     * Returns the active level endboss for combat and HUD synchronization.
+     * It keeps constructor and collision helpers from repeating the lookup.
+     */
+    findEndboss() {
+        return this.level.enemies.find((enemy) => enemy instanceof Endboss) ?? null;
     }
 
     /**

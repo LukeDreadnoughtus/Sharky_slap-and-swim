@@ -55,7 +55,7 @@ const LEVEL_3_ENEMIES = [
  * It uses buildLevel so only level-three balancing values stay in this file.
  */
 function createLevel3() {
-    return buildLevel(LEVEL_3_ENEMIES, getLevel3BossConfig(), 'L', 11);
+    return buildLevel(LEVEL_3_ENEMIES, getLevel3BossConfig(), 'L', 11, 20);
 }
 
 /**

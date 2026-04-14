@@ -32,6 +32,7 @@ function setupStartScreen() {
     syncGameViewport();
     setupTouchControls();
     updateOrientationPrompt();
+    toggleInGameUi(false);
     const ui = getStartScreenElements();
 
     if (!ui) {
@@ -48,8 +49,9 @@ function setupStartScreen() {
  * It keeps setupStartScreen focused on orchestration rather than querying.
  */
 function getStartScreenElements() {
-    const ids = ['startscreen', 'startBtn', 'keyBtn', 'keyOverlay', 'legalNoticeBtn', 'legalNoticeOverlay', 'closeLegalNoticeBtn',
-        'settingsBtn', 'fullscreenBtn', 'closePauseBtn', 'restartBtn', 'leaveBtn', 'muteBtn', 'tryAgainBtn', 'leaveGameBtn', 'nextLevelBtn'];
+    const ids = ['startscreen', 'startBtn', 'keyBtn', 'keyOverlay', 'keyOverlayImage', 'legalNoticeBtn', 'legalNoticeOverlay',
+        'closeLegalNoticeBtn', 'settingsBtn', 'fullscreenBtn', 'closePauseBtn', 'restartBtn', 'leaveBtn', 'muteBtn',
+        'tryAgainBtn', 'leaveGameBtn', 'nextLevelBtn'];
     const elements = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
     elements.backdrop = document.querySelector('.key-overlay__backdrop');
     elements.legalNoticeBackdrop = document.querySelector('.legal-overlay__backdrop');
@@ -101,9 +103,33 @@ function bindStartScreenActions(ui) {
  */
 function bindPrimaryStartActions(ui) {
     bindTap(ui.startBtn, async () => startGameFromMenu(ui.startscreen));
-    bindTap(ui.keyBtn, () => ui.keyOverlay.classList.remove('hidden'));
+    bindTap(ui.keyBtn, () => openKeyOverlay(ui.keyOverlay, ui.keyOverlayImage));
     bindTap(ui.legalNoticeBtn, openLegalNotice);
     bindTap(ui.closeLegalNoticeBtn, closeLegalNotice);
+}
+
+/**
+ * Opens the key overlay with the matching desktop or mobile control image.
+ * It supports bindPrimaryStartActions and keeps the image swap localized.
+ */
+function openKeyOverlay(keyOverlay, keyOverlayImage) {
+    syncKeyOverlayImage(keyOverlayImage);
+    keyOverlay.classList.remove('hidden');
+}
+
+/**
+ * Applies the correct control image for the current viewport type.
+ * It supports openKeyOverlay before the overlay becomes visible.
+ */
+function syncKeyOverlayImage(keyOverlayImage) {
+    if (!keyOverlayImage) {
+        return;
+    }
+
+    const nextSrc = isTouchViewport()
+        ? keyOverlayImage.dataset.mobileSrc
+        : keyOverlayImage.dataset.desktopSrc;
+    keyOverlayImage.src = nextSrc;
 }
 
 /**

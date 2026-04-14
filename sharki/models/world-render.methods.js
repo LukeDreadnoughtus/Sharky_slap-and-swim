@@ -71,10 +71,12 @@ World.prototype.drawForegroundLayer = function () {
     this.addtoMap(this.statusBar);
     this.addtoMap(this.coinStatusBar);
     this.addtoMap(this.poisonStatusBar);
+    this.addtoMap(this.endbossStatusBar);
     this.ctx.translate(this.camera_x, 0);
     this.addtoMap(this.character);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.coins);
+    this.addObjectsToMap(this.level.hearts);
     this.addObjectsToMap(this.level.poisonBubbles);
     this.addObjectsToMap(this.throwableObjects);
     this.ctx.translate(-this.camera_x, 0);

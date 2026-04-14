@@ -648,6 +648,19 @@ canvas {
     touch-action: none;
 }
 
+/*
+ * - Adapts touch controls for the title screen mobile fullscreen action.
+ * - It keeps only the mobile fullscreen button visible above the menu.
+ */
+
+.touch-controls--menu .touch-controls__cluster {
+    display: none;
+}
+
+.touch-controls--menu .touch-controls__row {
+    display: none;
+}
+
 .touch-controls__cluster,
 .touch-controls__row,
 
@@ -1140,7 +1153,7 @@ body.fullscreen-active .startscreen__buttons {
 }
 
 .startscreen .fullscreen-button {
-    bottom: 72px;
+    bottom: 14px;
 }
 
 .startscreen .settings-button {

@@ -26,7 +26,15 @@ class DrawableObject {
             return;
         }
 
-        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.img, this.getRenderX(), this.y, this.width, this.height);
+    }
+
+    /**
+     * Returns the sprite X position that should be used during rendering.
+     * It lets subclasses shift visuals without changing collision logic.
+     */
+    getRenderX() {
+        return this.x;
     }
 
     /**
@@ -34,7 +42,8 @@ class DrawableObject {
      * It supports draw so the render method stays compact.
      */
     canDrawSprite() {
-        return !this.isRemoved && Boolean(this.img) && this.img.complete && this.img.naturalWidth !== 0;
+        return !this.isRemoved && !this.hiddenWhileHit && Boolean(this.img)
+            && this.img.complete && this.img.naturalWidth !== 0;
     }
 
     /**

@@ -12,9 +12,21 @@ function preventMobileViewportGestures(event) {
         return;
     }
 
+    if (isScrollableOverlayTouch(event.target)) {
+        return;
+    }
+
     if (isGameSurfaceTouch(event.target) || isTouchControl(event.target)) {
         event.preventDefault();
     }
+}
+
+/**
+ * Checks whether one touch started inside a scrollable overlay content area.
+ * It lets preventMobileViewportGestures keep legal notice scrolling intact.
+ */
+function isScrollableOverlayTouch(target) {
+    return Boolean(target?.closest?.('.legal-overlay__content'));
 }
 
 /**

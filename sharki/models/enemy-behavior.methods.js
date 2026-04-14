@@ -67,7 +67,7 @@ Shark.prototype.canMoveVertically = function () {
         return false;
     }
 
-    return !this.isDead() && !this.isRemoved;
+    return !this.isDead() && !this.isRemoved && !this.isMovementBlocked();
 };
 
 /**

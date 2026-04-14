@@ -34,7 +34,7 @@ const LEVEL_2_ENEMIES = [
  * It uses buildLevel so the file only contains data that is unique to level two.
  */
 function createLevel2() {
-    return buildLevel(LEVEL_2_ENEMIES, getLevel2BossConfig(), 'L', 9);
+    return buildLevel(LEVEL_2_ENEMIES, getLevel2BossConfig(), 'L', 9, 10);
 }
 
 /**

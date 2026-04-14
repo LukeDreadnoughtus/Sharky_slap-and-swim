@@ -133,6 +133,7 @@ class Character extends MovableObject {
     longIdleDelayThreshold = 3;
     isSlapping = false;
     slapImageIndex = 0;
+    slapTravelDistance = 50;
     slapTargetsHit = new Set();
     isBubbleAttacking = false;
     bubbleAttackFrameIndex = 0;
@@ -358,7 +359,8 @@ class Character extends MovableObject {
     getLeftSlapHitbox() {
         const lineLength = 80;
         const y = this.y + this.height * 0.65 - 10;
-        const endX = this.x + 120;
+        const offsetX = this.getSlapTravelOffsetX();
+        const endX = this.x + 120 + offsetX;
         return { x: endX - lineLength, y, width: lineLength, height: 20 };
     }
 
@@ -369,6 +371,12 @@ class Character extends MovableObject {
     getRightSlapHitbox() {
         const lineLength = 80;
         const y = this.y + this.height * 0.65 - 10;
-        return { x: this.x + this.width - 120, y, width: lineLength, height: 20 };
+        const offsetX = this.getSlapTravelOffsetX();
+        return {
+            x: this.x + this.width - 120 + offsetX,
+            y,
+            width: lineLength,
+            height: 20
+        };
     }
 }

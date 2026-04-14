@@ -123,6 +123,18 @@ class MovableObject extends DrawableObject {
         return this.energy == 0;
     }
 
+
+    /**
+     * Restores energy up to the shared maximum and reports a state change.
+     * It supports heart pickups before the status bar is refreshed in the world.
+     */
+    restoreEnergy(amount = 20) {
+        const nextEnergy = Math.min(100, this.energy + amount);
+        const hasChanged = nextEnergy !== this.energy;
+        this.energy = nextEnergy;
+        return hasChanged;
+    }
+
     /**
      * Disables collisions for objects that should no longer participate in combat.
      * It is typically called from onDeath handlers before removal happens.
@@ -169,10 +181,27 @@ class MovableObject extends DrawableObject {
      * It is used by moveLeft and respects death and removal state.
      */
     moveLeftStep() {
-        if (this.isDead() || this.isRemoved) {
+        if (this.isDead() || this.isRemoved || this.isMovementBlocked()) {
             return;
         }
 
         this.x -= this.speed;
     }
+    /**
+     * Blocks movement updates for a short feedback window on this object.
+     * It supports hit reactions before the normal movement loop continues.
+     */
+    setTemporaryMovementBlock(duration = 0) {
+        this.movementBlockedUntil = Date.now() + Math.max(0, duration);
+    }
+
+    /**
+     * Reports whether movement updates should currently stay paused.
+     * It supports moveLeftStep and vertical enemy movement during hit feedback.
+     */
+    isMovementBlocked() {
+        return Date.now() < (this.movementBlockedUntil ?? 0);
+    }
+
 }
+

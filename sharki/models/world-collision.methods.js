@@ -12,10 +12,10 @@ World.prototype.CheckCollisions = function () {
         if (this.handleCharacterDeathState()) {
             return;
         }
-
         this.checkBossTriggers();
         this.checkEnemyCollisions();
         this.checkCoinCollisions();
+        this.checkHeartCollisions();
         this.checkPoisonBubblePickups();
         this.checkThrowableCollisions();
     }, 50);
@@ -273,7 +273,7 @@ World.prototype.checkSlapHit = function (enemy) {
         return;
     }
 
-    enemy.hit(5);
+    this.applyEnemyDamage(enemy, 5);
     this.character.slapTargetsHit.add(enemy);
 };
 
@@ -339,7 +339,7 @@ World.prototype.handleThrowableHit = function (bubble, enemy) {
         return;
     }
 
-    enemy.hit(bubble.damage);
+    this.applyEnemyDamage(enemy, bubble.damage);
     bubble.alreadyHit = true;
     this.playBubbleImpactSound(bubble.bubbleType);
     bubble.remove();
@@ -386,12 +386,13 @@ World.prototype.removePoisonBubbleFromInventory = function (amount = 1) {
      * It is triggered once from boss trigger collisions.
      */
 World.prototype.startBossFight = function () {
-    const endboss = this.level.enemies.find((enemy) => enemy instanceof Endboss);
-
+    const endboss = this.endboss ?? this.findEndboss();
     if (!endboss) {
         return;
     }
 
+    this.endboss = endboss;
+    this.showEndbossStatusBar();
     window.gameAudio?.play('monster_roar_sound');
     endboss.startIntro();
 };

@@ -3,12 +3,20 @@
  * It keeps the start screen, desktop controls, and touch controls aligned.
  */
 function toggleInGameUi(show) {
-    const startScreen = document.getElementById('startscreen');
-    const startVisible = Boolean(startScreen && !startScreen.classList.contains('startscreen--hide'));
+    const startVisible = isStartScreenVisible();
     toggleElementVisibility('settingsBtn', !(show || startVisible));
-    toggleDesktopFullscreenButton(show);
-    toggleMobileFullscreenButton(show);
-    toggleTouchControls(show);
+    toggleDesktopFullscreenButton();
+    toggleMobileFullscreenButton(show, startVisible);
+    toggleTouchControls(show, startVisible);
+}
+
+/**
+ * Returns whether the title screen is currently visible.
+ * It supports menu-aware UI branches inside toggleInGameUi.
+ */
+function isStartScreenVisible() {
+    const startScreen = document.getElementById('startscreen');
+    return Boolean(startScreen && !startScreen.classList.contains('startscreen--hide'));
 }
 
 /**
@@ -43,30 +51,41 @@ function toggleDesktopFullscreenButton() {
  * Updates the mobile fullscreen button for touch landscape gameplay.
  * It is coordinated by toggleInGameUi and orientation checks.
  */
-function toggleMobileFullscreenButton(show) {
+function toggleMobileFullscreenButton(show, startVisible) {
     const mobileFullscreenBtn = document.getElementById('mobileFullscreenBtn');
 
     if (!mobileFullscreenBtn) {
         return;
     }
 
-    const visible = show && isTouchViewport() && !isPortraitTouchDevice();
+    const visible = shouldShowMobileFullscreen(show, startVisible);
     mobileFullscreenBtn.classList.toggle('hidden', !visible);
+}
+
+/**
+ * Returns whether the mobile fullscreen control should be visible.
+ * It is shared by the button and touch container visibility logic.
+ */
+function shouldShowMobileFullscreen(show, startVisible) {
+    return (show || startVisible) && isTouchViewport() && !isPortraitTouchDevice();
 }
 
 /**
  * Shows or hides the touch controls and keeps aria state synchronized.
  * It is the touch-control branch used by toggleInGameUi.
  */
-function toggleTouchControls(show) {
+function toggleTouchControls(show, startVisible) {
     const touchControls = document.getElementById('touchControls');
 
     if (!touchControls) {
         return;
     }
 
-    const visible = show && isTouchViewport() && !isPortraitTouchDevice();
+    const gameplayVisible = show && isTouchViewport() && !isPortraitTouchDevice();
+    const menuVisible = shouldShowMobileFullscreen(false, startVisible);
+    const visible = gameplayVisible || menuVisible;
     touchControls.classList.toggle('hidden', !visible);
+    touchControls.classList.toggle('touch-controls--menu', menuVisible && !gameplayVisible);
     touchControls.setAttribute('aria-hidden', visible ? 'false' : 'true');
 }
 

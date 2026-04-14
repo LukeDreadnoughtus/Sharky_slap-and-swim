@@ -19,12 +19,17 @@
   <script src="sharki/models/enemy.class.js"></script>
   <script src="sharki/models/enemy-behavior.methods.js"></script>
   <script src="sharki/models/status-bar.class.js"></script>
+  <script src="sharki/models/endboss-status-bar.class.js"></script>
   <script src="sharki/models/coin-status-bar.class.js"></script>
   <script src="sharki/models/poison-status-bar.class.js"></script>
   <script src="sharki/models/coin.class.js"></script>
+  <script src="sharki/models/heart.class.js"></script>
   <script src="sharki/models/poison-bubble.class.js"></script>
   <script src="sharki/models/world.class.js"></script>
+  <script src="sharki/models/world-enemy-feedback.methods.js"></script>
   <script src="sharki/models/world-collision.methods.js"></script>
+  <script src="sharki/models/world-heart.methods.js"></script>
+  <script src="sharki/models/world-endboss-ui.methods.js"></script>
   <script src="sharki/models/world-render.methods.js"></script>
   <script src="sharki/models/water.class.js"></script>
   <script src="sharki/models/background-object.class.js"></script>
@@ -72,7 +77,7 @@
         <div id="keyOverlay" class="key-overlay hidden">
             <div class="key-overlay__backdrop"></div>
             <div class="key-overlay__dialog">
-                <img src="sharki/img/6.Botones/Key/Steuerung.png" alt="Controls" class="key-overlay__image">
+                <img id="keyOverlayImage" src="sharki/img/6.Botones/Key/Steuerung.png" data-desktop-src="sharki/img/6.Botones/Key/Steuerung.png" data-mobile-src="sharki/img/6.Botones/Key/Steuerung-mobile.png" alt="Controls" class="key-overlay__image">
             </div>
         </div>
 

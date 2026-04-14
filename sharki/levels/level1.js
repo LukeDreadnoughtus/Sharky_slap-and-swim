@@ -31,7 +31,7 @@ const LEVEL_1_ENEMIES = [
  * It delegates common assembly to buildLevel so only level-specific data stays here.
  */
 function createLevel1() {
-    return buildLevel(LEVEL_1_ENEMIES, getLevel1BossConfig(), 'D', 7);
+    return buildLevel(LEVEL_1_ENEMIES, getLevel1BossConfig(), 'D', 7, 5);
 }
 
 /**

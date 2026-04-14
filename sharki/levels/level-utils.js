@@ -21,6 +21,14 @@ function createCoins(count, minDistance, startX, endX, y) {
 }
 
 /**
+ * Builds heart pickups with the same lane distribution used by coin spawns.
+ * It supports buildLevel so healing items follow the existing pickup flow.
+ */
+function createHearts(count, minDistance, startX, endX, y) {
+    return createCollectables(Heart, count, minDistance, startX, endX, y, true);
+}
+
+/**
  * Builds poison bubble pickups and keeps the original random left and right art.
  * It reuses createCollectables before mapping the spawned positions to sprite variants.
  */
@@ -166,12 +174,13 @@ function createBackgroundLayer(themePrefix, layer, segmentCount, segmentWidth) {
  * Builds a complete level instance from shared content factories and boundary settings.
  * It is reused by all concrete level files so only level-specific data stays there.
  */
-function buildLevel(enemyConfigs, endbossConfig, themePrefix, poisonCount) {
+function buildLevel(enemyConfigs, endbossConfig, themePrefix, poisonCount, heartCount) {
     const enemies = [...createEnemies(enemyConfigs, ENEMY_MIN_DISTANCE, ENEMY_START_X, ENEMY_END_X), new Endboss(endbossConfig)];
     const coins = createCoins(25, 350, COIN_START_X, COIN_END_X, 200);
+    const hearts = createHearts(heartCount, 240, COIN_START_X, COIN_END_X, 200);
     const triggers = [new BossTrigger(BOSS_TRIGGER_X, 110, 300)];
     const poison = createPoisonBubbles(poisonCount, 500, POISON_BUBBLE_START_X, POISON_BUBBLE_END_X, 200);
-    return finalizeLevel(new Level(enemies, createBackgroundObjects(themePrefix), coins, triggers, poison));
+    return finalizeLevel(new Level(enemies, createBackgroundObjects(themePrefix), coins, triggers, poison, hearts));
 }
 
 /**
