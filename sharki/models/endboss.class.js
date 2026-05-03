@@ -85,6 +85,7 @@ class Endboss extends MovableObject {
     hurtFrameIndex = 0;
     deathAnimationStarted = false;
     moveWhileHurt = false;
+    maxEnergy = 100;
 
     /**
      * Creates the boss with its images, timings, and movement defaults.
@@ -118,6 +119,7 @@ class Endboss extends MovableObject {
      */
     applyEndbossConfig(config) {
         this.energy = config.energy ?? 100;
+        this.maxEnergy = this.energy;
         this.speed = config.speed ?? this.speed;
         this.movementSpeed = config.movementSpeed ?? config.speed ?? this.movementSpeed;
         this.verticalMovementSpeed = config.verticalMovementSpeed ?? this.verticalMovementSpeed;

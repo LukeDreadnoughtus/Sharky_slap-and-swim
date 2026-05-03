@@ -142,6 +142,7 @@ class Character extends MovableObject {
     deathAnimationFinished = false;
     deathImageIndex = 0;
     hurtAnimationType = 'poison';
+    attackInputLocks = { SPACE: false, S: false, D: false };
 
     /**
      * Creates the character and preloads all animation image groups.

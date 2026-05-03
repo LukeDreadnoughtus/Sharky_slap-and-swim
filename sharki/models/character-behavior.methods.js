@@ -26,11 +26,8 @@ Character.prototype.updateCharacterMovement = function () {
  * It supports updateCharacterMovement before attack input handling runs.
  */
 Character.prototype.updateMovementPosition = function () {
-    if (!this.isBubbleAttacking) {
-        this.handleHorizontalMovement();
-        this.handleVerticalMovement();
-    }
-
+    this.handleHorizontalMovement();
+    this.handleVerticalMovement();
     this.clampVerticalPosition();
 };
 
@@ -89,7 +86,7 @@ Character.prototype.handleAttackInputs = function () {
  * It keeps handleAttackInputs short and isolates melee-specific guards.
  */
 Character.prototype.handleSlapInput = function () {
-    if (this.world.keyboard.SPACE && !this.isSlapping && !this.isBubbleAttacking) {
+    if (this.isFreshAttackInput('SPACE') && !this.isSlapping && !this.isBubbleAttacking) {
         this.slap();
     }
 };
@@ -99,7 +96,7 @@ Character.prototype.handleSlapInput = function () {
  * It is one branch inside handleAttackInputs.
  */
 Character.prototype.handleBubbleShotInput = function () {
-    if (this.world.keyboard.S) {
+    if (this.isFreshAttackInput('S')) {
         this.startBubbleAttack();
     }
 };
@@ -109,9 +106,33 @@ Character.prototype.handleBubbleShotInput = function () {
  * It is the poison-specific branch inside handleAttackInputs.
  */
 Character.prototype.handlePoisonBubbleInput = function () {
-    if (this.world.keyboard.D) {
+    if (this.isFreshAttackInput('D')) {
         this.startPoisonBubbleAttack();
     }
+};
+
+/**
+ * Returns true only once per physical key press for attack buttons.
+ * This prevents held keys from instantly restarting attacks and blocking swim/idle states.
+ */
+Character.prototype.isFreshAttackInput = function (key) {
+    if (!this.attackInputLocks) {
+        this.attackInputLocks = { SPACE: false, S: false, D: false };
+    }
+
+    const isPressed = Boolean(this.world?.keyboard?.[key]);
+
+    if (!isPressed) {
+        this.attackInputLocks[key] = false;
+        return false;
+    }
+
+    if (this.attackInputLocks[key]) {
+        return false;
+    }
+
+    this.attackInputLocks[key] = true;
+    return true;
 };
 
 
@@ -198,7 +219,8 @@ Character.prototype.playSlapAnimationFrame = function () {
      * It supports updateCharacterAnimation during active slap attacks.
      */
     const path = this.IMAGES_SLAP[this.slapImageIndex];
-    this.img = this.imageCache[path];
+
+    this.trySetImage(path);
     this.slapImageIndex += 1;
 
     if (this.slapImageIndex >= this.IMAGES_SLAP.length) {
@@ -230,7 +252,8 @@ Character.prototype.playBubbleAttackAnimation = function () {
     }
 
     const path = images[this.bubbleAttackFrameIndex];
-    this.img = this.imageCache[path];
+
+    this.trySetImage(path);
     this.bubbleAttackFrameIndex += 1;
 };
 
@@ -298,7 +321,8 @@ Character.prototype.playDeathAnimationOnce = function () {
     }
 
     const path = this.IMAGES_DEAD[this.deathImageIndex];
-    this.img = this.imageCache[path];
+
+    this.trySetImage(path);
     this.deathImageIndex += 1;
     this.deathAnimationFinished = this.deathImageIndex >= this.IMAGES_DEAD.length;
 };
@@ -347,11 +371,10 @@ Character.prototype.hit = function (damage = 5, type = 'poison') {
  * It supports hit after shared damage application already changed the energy value.
  */
 Character.prototype.handleCriticalHitState = function () {
-    if (!this.isDead() && this.energy > 20) {
+    if (!this.isDead()) {
         return;
     }
 
-    this.energy = 0;
     this.triggerDeathState();
 };
 

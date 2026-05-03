@@ -224,6 +224,14 @@ class Shark extends MovableObject{
     }
 
     /**
+     * Reports whether the enemy sprite should stay hidden for one blink step.
+     * It plugs enemy-only hit feedback into the shared drawable render helper.
+     */
+    shouldHideSpriteDuringHit() {
+        return this.hiddenWhileHit;
+    }
+
+    /**
      * Starts a triple blink and movement freeze after a non-lethal hit.
      * It supports World.applyEnemyDamage with visible enemy feedback.
      */

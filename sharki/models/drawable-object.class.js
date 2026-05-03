@@ -42,8 +42,17 @@ class DrawableObject {
      * It supports draw so the render method stays compact.
      */
     canDrawSprite() {
-        return !this.isRemoved && !this.hiddenWhileHit && Boolean(this.img)
-            && this.img.complete && this.img.naturalWidth !== 0;
+        return !this.isRemoved && !this.shouldHideSpriteDuringHit()
+            && Boolean(this.img) && this.img.complete
+            && this.img.naturalWidth !== 0;
+    }
+
+    /**
+     * Reports whether hit feedback should hide this sprite right now.
+     * It lets enemies blink without affecting unrelated drawable objects.
+     */
+    shouldHideSpriteDuringHit() {
+        return false;
     }
 
     /**
@@ -130,6 +139,25 @@ class DrawableObject {
         ctx.moveTo(startX, lineY);
         ctx.lineTo(endX, lineY);
         ctx.stroke();
+    }
+
+
+    /**
+     * Switches the active sprite to a cached animation image.
+     * If the image was not preloaded for any reason, it is loaded and cached once instead of crashing the game loop.
+     */
+    trySetImage(path) {
+        if (!path) {
+            return;
+        }
+
+        if (!this.imageCache[path]) {
+            const img = new Image();
+            img.src = path;
+            this.imageCache[path] = img;
+        }
+
+        this.img = this.imageCache[path];
     }
 
     /**
